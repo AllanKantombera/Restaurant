@@ -64,7 +64,7 @@ body {
     .stats-delivered .card-icon { color: #0dcaf0; }
     .stats-total .card-icon { color: #0dcaf0; }
     .stats-revenue .card-icon { color: #0dcaf0; }
-
+    .card-custom {color: #0dcaf0;}
 .stats-delivered p, .stats-orders h3, .stats-customers h3, 
 .stats-menu h3, .stats-revenue h3 {
     color: #adb5bd; /* Grey color for stats numbers */
