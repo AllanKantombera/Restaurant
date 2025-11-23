@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aunt Joy's Restaurant - Online Ordering</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+
+            <!-- Logo -->
+            <a class="navbar-brand fw-bold" href="#">
+                <img src="photos/logo1.png" alt="SnackScript Logo" height="40">
+            </a>
+
+            <!-- Mobile Toggle -->
+            <button class="navbar-toggler bg-dark" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Nav Content -->
+            <div class="collapse navbar-collapse" id="nav">
+
+                <!-- Nav Links -->
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a href="#" class="nav-link">Home</a></li>
+                    <li class="nav-item"><a href="#menu" class="nav-link">Menu</a></li>
+                    <li class="nav-item"><a href="#features" class="nav-link">Features</a></li>
+                    <li class="nav-item"><a href="#order" class="nav-link">Order</a></li>
+                </ul>
+                <!-- Search Form -->
+                <form class="d-flex ms-auto me-3 mt-2 mt-lg-0" role="search">
+                    <input class="form-control me-2 rounded-pill" type="search" placeholder="Search food..."
+                        aria-label="Search">
+                    <button class="btn btn-outline-light rounded-pill" type="submit">
+                        <i class="fa fa-search"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="container">
+            <h1 class="display-4 fw-bold">Delicious Meals Delivered Across Mzuzu</h1>
+            <p class="lead mb-4">Fast, reliable and fresh — enjoy Aunt Joy’s best meals from the comfort of your home.
+            </p>
+            <a href="#menu" class="btn btn-sky btn-lg">Order Now</a>
+        </div>
+    </section>
+
+    <!-- MENU PREVIEW -->
+    <section class="py-5" id="menu">
+        <div class="container">
+            <div class="section-header text-center mb-5">
+                <h2>Popular Meals</h2>
+                <p>Freshly prepared and always delicious</p>
+            </div>
+
+            <div class="row g-4">
+
+                <!-- MEAL 1 -->
+                <div class="col-md-4">
+                    <div class="menu-card">
+                        <img src="photos/food (1).jpg">
+                        <div class="p-3">
+                            <h5 class="fw-bold">Beef Burger</h5>
+                            <p>Juicy grilled beef, cheese</p>
+                            <span class="price">MWK 4,500</span>
+                            <button class="btn btn-sky w-100 mt-3">Add To Cart</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MEAL 2 -->
+                <div class="col-md-4">
+                    <div class="menu-card">
+                        <img src="photos/food (2).jpg">
+                        <div class="p-3">
+                            <h5 class="fw-bold">Family Pizza</h5>
+                            <p>Cheesy, tasty, and perfect for sharing.</p>
+                            <span class="price">MWK 9,500</span>
+                            <button class="btn btn-sky w-100 mt-3">Add To Cart</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MEAL 3 -->
+                <div class="col-md-4">
+                    <div class="menu-card">
+                        <img src="photos/food (1).jpg">
+                        <div class="p-3">
+                            <h5 class="fw-bold">Roasted Chicken</h5>
+                            <p>Perfectly seasoned & slow roasted.</p>
+                            <span class="price">MWK 7,000</span>
+                            <button class="btn btn-sky w-100 mt-3">Add To Cart</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-sky  mt-3" style="width: 40xp;">View Full Manu</button>
+
+        </div>
+
+    </section>
+
+    <!-- FEATURES -->
+    <section class="features-section" id="features">
+        <div class="container text-center">
+            <h2 class="fw-bold text-white mb-5">Why Order With Us?</h2>
+
+            <div class="row g-4">
+
+                <div class="col-md-4">
+                    <i class="fa-solid fa-bowl-food feature-icon"></i>
+                    <h5 class="mt-3 fw-bold">Fresh Meals Daily</h5>
+                    <p>All meals are prepared fresh with high-quality ingredients.</p>
+                </div>
+
+                <div class="col-md-4">
+                    <i class="fa-solid fa-truck-fast feature-icon"></i>
+                    <h5 class="mt-3 fw-bold">Fast Delivery</h5>
+                    <p>We deliver anywhere within Mzuzu quickly and reliably.</p>
+                </div>
+
+                <div class="col-md-4">
+                    <i class="fa-solid fa-mobile feature-icon"></i>
+                    <h5 class="mt-3 fw-bold">Easy Online Ordering</h5>
+                    <p>Browse, add to cart, and place your order with ease.</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section" id="order">
+        <div class="container">
+            <h2 class="fw-bold">Ready to Place Your Order?</h2>
+            <p>Enjoy fast delivery anywhere within Mzuzu. Fresh, affordable, and convenient.</p>
+            <a href="#" class="btn btn-dark btn-lg">Order Now</a>
+        </div>
+    </section>
+
+ <!-- FOOTER -->
+<footer class="footer text-center py-5" style="background: #0f0f0f; color: #e2e8f0;">
+    <div class="container">
+        <!-- About Us -->
+        <div class="mb-4">
+            <h5 class="fw-bold" style="color: #38bdf8;">About Us</h5>
+            <p style="max-width: 600px; margin: 0 auto; opacity: 0.9;">
+                Aunt Joy's Restaurant serves delicious meals with a focus on quality ingredients, fast service, and a welcoming atmosphere. Experience the taste that keeps Mzuzu coming back for more.
+            </p>
+        </div>
+
+        <!-- Contact Info -->
+        <div class="mb-3">
+            <p class="mb-1"><i class="fa-solid fa-phone me-2" style="color: #38bdf8;"></i>+265 999 123 456</p>
+            <p><i class="fa-solid fa-envelope me-2" style="color: #38bdf8;"></i>info@auntjoysrestaurant.mw</p>
+        </div>
+        <p class="mt-3">&copy; 2025 Aunt Joy's Restaurant | All Rights Reserved</p>
+    </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

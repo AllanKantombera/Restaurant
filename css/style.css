@@ -1,0 +1,115 @@
+:root {
+    --sky: #0ea5e9;
+    --sky-light: #38bdf8;
+    --dark: #0f0f0f;
+    --dark-2: #1a1a1a;
+    --gradient: linear-gradient(135deg, #0ea5e9, #3b82f6);
+}
+
+body {
+    background: #f3faff;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* NAVBAR */
+.navbar {
+    background: var(--dark);
+}
+
+.navbar-brand,
+.nav-link {
+    color: white !important;
+    font-weight: 500;
+}
+
+.nav-link:hover {
+    color: var(--sky-light) !important;
+}
+
+/* HERO */
+.hero {
+    height: 90vh;
+    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+        url('../photos/cover1.jpg') center/cover no-repeat;
+    display: flex;
+    align-items: center;
+    color: white;
+    text-align: center;
+}
+
+/* BUTTONS */
+.btn-sky {
+    background: var(--gradient);
+    color: white;
+    border-radius: 50px;
+}
+
+.btn-sky:hover {
+    opacity: 0.9;
+    color: #fff;
+}
+
+/* SECTION HEADER */
+.section-header h2 {
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 0.5rem;
+}
+
+.section-header p {
+    opacity: 0.7;
+}
+
+/* MENU CARDS */
+.menu-card {
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.menu-card img {
+    height: 300px;
+    object-fit: cover;
+}
+
+.price {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--sky);
+}
+
+/* FEATURES */
+.features-section {
+    background: var(--dark-2);
+    color: #e2e8f0;
+    padding: 5rem 0;
+}
+
+.feature-icon {
+    font-size: 45px;
+    color: var(--sky-light);
+}
+
+/* CTA */
+.cta-section {
+    background: var(--gradient);
+    color: white;
+    padding: 4rem 0;
+    text-align: center;
+}
+
+/* FOOTER */
+.footer {
+    background: var(--dark);
+    color: #ccc;
+    padding: 2rem 0;
+}
+
+.footer a {
+    color: #ccc;
+}
+
+.footer a:hover {
+    color: var(--sky-light);
+}
