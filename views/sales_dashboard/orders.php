@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aunt Joy's Restaurant | Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="../../assests/css/dashboard.css" rel="stylesheet">
+
+</head>
+
+<body>
+    <!-- Fixed Navbar -->
+    <nav class="navbar navbar-dark px-4">
+        <a class="navbar-brand d-flex align-items-center" href="#">
+            <div class="logo">AJ</div>
+            <span class="text-light fw-bold">Aunt Joy's Restaurant</span>
+        </a>
+
+        <div class="d-flex">
+            <span class="text-light me-3">sales User</span>
+            <button class="btn btn-sm btn-outline-light">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- SIDEBAR -->
+            <div class="col-md-2 sidebar">
+                <ul class="nav flex-column">
+                    <!-- Overview -->
+                    <li class="nav-item mb-2">
+                        <a class="nav-link " href="index.html">
+                            <i class="bi bi-speedometer2 me-2"></i> Overview
+                        </a>
+                    </li>
+                    <!-- Orders -->
+                    <li class="nav-item mb-2">
+                        <a class="nav-link active" href="orders.html">
+                            <i class="bi bi-bag-check me-2"></i> Orders
+                        </a>
+                    </li>
+                    <!-- Orders List -->
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="orderslist.html">
+                            <i class="bi bi-card-checklist me-2"></i> Orders List
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+
+
+            <!-- MAIN CONTENT -->
+            <div class="col-md-10 main-content">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="section-title">Orders Management</h2>
+                    <div class="text-end">
+                        <div class="text-light small" id="currentDateTime"></div>
+                    </div>
+                </div>
+
+                <!-- Pending Orders Section -->
+                <div class="card card-custom p-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="section-title mb-0">
+                            <i class="bi bi-clock-history me-2"></i>Pending Orders
+
+                        </h4>
+
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover" id="pendingOrdersTable">
+                            <thead>
+                                <tr>
+                                    <th>Order #</th>
+                                    <th>Customer</th>
+                                    <th>Items</th>
+                                    <th>Total</th>
+                                    <th>Time Placed</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Order 1 - Ready -->
+                                <tr data-status="ready">
+                                    <td class="fw-bold">#4325</td>
+                                    <td>
+
+                                        <div>Peter Mwale</div>
+
+                                    </td>
+                                    <td>
+                                        <span class="d-block">2x Chicken Burger</span>
+                                        <small class="text-muted">1x Fries, 2x Coke</small>
+                                    </td>
+                                    <td class="fw-bold" style="color: #ffd700;">K 12,500</td>
+                                    <td>
+                                        <span>15:30</span>
+                                        <small class="d-block text-warning">15 mins ago</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">Ready</span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success"
+                                            onclick="updateOrderStatus(4325, 'delivered')">
+                                            <i class="bi bi-check-lg me-1"></i>Deliver
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- Order 2 - Preparing -->
+                                <tr data-status="preparing">
+                                    <td class="fw-bold">#4324</td>
+                                    <td>
+                                        <div>Sarah Kunda</div>
+                                    </td>
+                                    <td>
+                                        <span class="d-block">1x Beef Pizza</span>
+                                        <small class="text-muted">Large, Extra Cheese</small>
+                                    </td>
+                                    <td class="fw-bold" style="color: #ffd700;">K 8,200</td>
+                                    <td>
+                                        <span>15:23</span>
+                                        <small class="d-block text-warning">22 mins ago</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-warning text-dark">Preparing</span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info" onclick="updateOrderStatus(4324, 'ready')">
+                                            <i class="bi bi-check2-circle me-1"></i>Mark Ready
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- Order 3 - Pending -->
+                                <tr data-status="pending">
+                                    <td class="fw-bold">#4323</td>
+                                    <td>
+                                        <div>Thomas Banda</div>
+                                    </td>
+                                    <td>
+                                        <span class="d-block">1x Grilled Chicken</span>
+                                        <small class="text-muted">With Vegetables, Rice</small>
+                                    </td>
+                                    <td class="fw-bold" style="color: #ffd700;">K 6,500</td>
+                                    <td>
+                                        <span>15:10</span>
+                                        <small class="d-block text-warning">35 mins ago</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">Pending</span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-warning"
+                                            onclick="updateOrderStatus(4323, 'preparing')">
+                                            <i class="bi bi-arrow-clockwise me-1"></i>Start Preparing
+                                        </button>
+                                    </td>
+                                </tr>
+
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Delivered Orders Section -->
+                <div class="card card-custom p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="section-title mb-0">
+                            <i class="bi bi-check-circle-fill me-2"></i>Delivered Orders Today
+                        </h4>
+                        <div class="text-muted">Total Revenue: <span class="fw-bold text-warning">K 86,400</span></div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Order #</th>
+                                    <th>Customer</th>
+                                    <th>Items</th>
+                                    <th>Total</th>
+                                    <th>Order Time</th>
+                                    <th>Delivered At</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="fw-bold">#4320</td>
+                                    <td>Mary Phiri</td>
+                                    <td>2x Chicken Burger, 1x Fries</td>
+                                    <td class="fw-bold" style="color: #ffd700;">K 11,200</td>
+                                    <td>14:30</td>
+                                    <td>15:05</td>
+                                    <td><span class="badge bg-success">Delivered</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">#4319</td>
+                                    <td>David Mwansa</td>
+                                    <td>1x Beef Pizza, 2x Coke</td>
+                                    <td class="fw-bold" style="color: #ffd700;">K 9,800</td>
+                                    <td>14:15</td>
+                                    <td>14:50</td>
+                                    <td><span class="badge bg-success">Delivered</span></td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+
+
+                </div>
+            </div>
+
+
+
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
