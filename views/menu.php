@@ -29,8 +29,6 @@ require_once __DIR__ . '/../app/Models/Meal.php';
 
 $mealModel = new Meal();
 $latestMeals = $mealModel->getLatestMeals();
-
-$cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;                
 ?>
 
 <!DOCTYPE html>
@@ -69,12 +67,7 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
                 <li class="nav-item"><a href="#features" class="nav-link">Features</a></li>
                 <li class="nav-item"><a href="#order" class="nav-link">Order</a></li>
             </ul>
-               
-
-                <span class="badge bg-light text-dark p-2">
-                    Cart (<?= $cartCount ?>)
-                </span>
-
+            
             <form class="d-flex ms-auto me-lg-3 mt-2 mt-lg-0" role="search">
                 <input class="form-control me-2 rounded-pill" type="search" placeholder="Search food..."
                     aria-label="Search">
@@ -145,8 +138,8 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
 
         <div class="row g-4 justify-content-center">
             
-            <?php if (!empty($latestMeals)): ?>
-                <?php foreach ($latestMeals as $meal): ?>
+            <?php if (!empty($Menu)): ?>
+                <?php foreach ($Menu as $meal): ?>
                     <div class="col-md-4 col-sm-6">
                         <div class="menu-card shadow-sm border border-secondary">
                             <img src="../photos/<?= htmlspecialchars($meal['image_url'] ?? '../assests/img/default-food.jpg'); ?>" 
@@ -156,13 +149,10 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
                                 <h5 class="fw-bold"><?= htmlspecialchars($meal['name']); ?></h5>
                                 <p class="text-muted small"><?= htmlspecialchars(substr($meal['description'], 0, 50)) . '...'; ?></p>
                                 <span class="price fw-bolder">MWK <?= number_format($meal['price']); ?></span>
-                                <button class="btn btn-sky w-100 mt-3 add-to-cart-btn"
-                                    data-id="<?= htmlspecialchars($meal['id']); ?>"
-                                    data-name="<?= htmlspecialchars($meal['name']); ?>"
-                                    data-price="<?= htmlspecialchars($meal['price']); ?>">
-                                Add To Cart
-                            </button>
-
+                                <button class="btn btn-sky w-100 mt-3" 
+                                        data-meal-id="<?= htmlspecialchars($meal['id']); ?>">
+                                    Add To Cart
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -172,50 +162,15 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
                     <p>Sorry, no meals are currently available on the menu!</p>
                 </div>
             <?php endif; ?>
+            
         </div>
         
         <div class="text-center mt-4">
-            <a href="menu.php." class="btn btn-sky">View Full Menu</a>
+            <a href="menu.php
+            " class="btn btn-sky">View Full Menu</a>
         </div>
     </div>
 </section>
-
-    <!-- FEATURES -->
-    <section class="features-section" id="features">
-        <div class="container text-center">
-            <h2 class="fw-bold text-white mb-5">Why Order With Us?</h2>
-
-            <div class="row g-4">
-
-                <div class="col-md-4">
-                    <i class="fa-solid fa-bowl-food feature-icon"></i>
-                    <h5 class="mt-3 fw-bold">Fresh Meals Daily</h5>
-                    <p>All meals are prepared fresh with high-quality ingredients.</p>
-                </div>
-
-                <div class="col-md-4">
-                    <i class="fa-solid fa-truck-fast feature-icon"></i>
-                    <h5 class="mt-3 fw-bold">Fast Delivery</h5>
-                    <p>We deliver anywhere within Mzuzu quickly and reliably.</p>
-                </div>
-
-                <div class="col-md-4">
-                    <i class="fa-solid fa-mobile feature-icon"></i>
-                    <h5 class="mt-3 fw-bold">Easy Online Ordering</h5>
-                    <p>Browse, add to cart, and place your order with ease.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- CTA -->
-    <section class="cta-section" id="order">
-        <div class="container">
-            <h2 class="fw-bold">Ready to Place Your Order?</h2>
-            <p>Enjoy fast delivery anywhere within Mzuzu. Fresh, affordable, and convenient.</p>
-            <a href="#" class="btn btn-dark btn-lg">Order Now</a>
-        </div>
-    </section>
 
     <!-- FOOTER -->
     <footer class="footer text-center py-5" style="background: #0f0f0f; color: #e2e8f0;">
@@ -238,29 +193,5 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
         </div>
     </footer>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        document.querySelectorAll('.add-to-cart-btn').forEach(button => {
-            button.addEventListener('click', function () {
-        
-                const meal = {
-                    id: this.getAttribute('data-id'),
-                    name: this.getAttribute('data-name'),
-                    price: this.getAttribute('data-price')
-                };
-        
-                fetch('../app/controllers/CartController.php', {
-                    method: 'POST',
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(meal)
-                })
-                .then(res => res.json())
-                .then(data => {
-                    alert(data.message);
-                })
-                .catch(err => console.error("Cart Error:", err));
-            });
-        });
-        </script>
-        
 </body>
 </html>

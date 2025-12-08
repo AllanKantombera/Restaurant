@@ -31,19 +31,19 @@
             <div class="col-md-2 sidebar">
                 <ul class="nav flex-column">
                     <li class="nav-item mb-2">
-                        <a class="nav-link " href="index.html">
+                        <a class="nav-link " href="index.php">
                             <i class="bi bi-speedometer2 me-2"></i> Overview
                         </a>
                     </li>
 
                     <li class="nav-item mb-2">
-                        <a class="nav-link" href="orders.html">
+                        <a class="nav-link" href="orders.php">
                             <i class="bi bi-list-ul me-2"></i> Orders
                         </a>
                     </li>
 
                     <li class="nav-item mb-2">
-                        <a class="nav-link active" href="orderslist.html">
+                        <a class="nav-link active" href="orderslist.php">
                             <i class="bi bi-people-fill me-2"></i> Orders List
                         </a>
                     </li>

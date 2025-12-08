@@ -32,19 +32,19 @@
                 <ul class="nav flex-column">
                     <!-- Overview -->
                     <li class="nav-item mb-2">
-                        <a class="nav-link active" href="index.html">
+                        <a class="nav-link active" href="index.php">
                             <i class="bi bi-speedometer2 me-2"></i> Overview
                         </a>
                     </li>
                     <!-- Orders -->
                     <li class="nav-item mb-2">
-                        <a class="nav-link" href="orders.html">
+                        <a class="nav-link" href="orders.php">
                             <i class="bi bi-bag-check me-2"></i> Orders
                         </a>
                     </li>
                     <!-- Orders List -->
                     <li class="nav-item mb-2">
-                        <a class="nav-link" href="orderslist.html">
+                        <a class="nav-link" href="orderslist.php">
                             <i class="bi bi-card-checklist me-2"></i> Orders List
                         </a>
                     </li>

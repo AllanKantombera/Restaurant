@@ -31,19 +31,19 @@
             <div class="col-md-2 sidebar">
                 <ul class="nav flex-column">
                     <li class="nav-item mb-2">
-                        <a class="nav-link active" href="index.html">
+                        <a class="nav-link active" href="index.php">
                             <i class="bi bi-speedometer2 me-2"></i> Overview
                         </a>
                     </li>
                 
                     <li class="nav-item mb-2">
-                        <a class="nav-link active" href="reports.html">
+                        <a class="nav-link active" href="reports.php">
                             <i class="bi bi-graph-up me-2"></i> Reports
                         </a>
                     </li>
                 
                     <li class="nav-item mb-2">
-                        <a class="nav-link" href="reportsExport.html">
+                        <a class="nav-link" href="reportsExport.php">
                             <i class="bi bi-download me-2"></i> Export Reports
                         </a>
                     </li>

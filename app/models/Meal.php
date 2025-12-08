@@ -1,6 +1,4 @@
 <?php
-// File: app/models/Meal.php
-
 require_once __DIR__ . '/../../config/Database.php';
 
 class Meal {
@@ -83,4 +81,22 @@ public function getLatestMeals() {
         return [];
     }
 }
+
+public function Menu() {
+    $query = "
+       SELECT * FROM meals ORDER BY id DESC LIMIT 3
+    ";
+    
+    $stmt = $this->conn->prepare($query);
+    
+    try {
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        // Log error
+        return [];
+    }
+}
+
+
 }
