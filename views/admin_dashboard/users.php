@@ -1,10 +1,5 @@
 <?php
-// views/admin/users.php (at the very top)
-
-// Adjust path as needed based on where this view file is located relative to the controller
 require_once __DIR__ . '/../../app/Controllers/UserController.php';
-// Note: The UserController requires the Model and Database, which should be included at the top of UserController.php
-
 $userController = new UserController();
 
 $userModel = new User(); 
@@ -12,17 +7,18 @@ $staffUsers = $userModel->getStaffUsers();
 $customers = $userModel->getCustomers();
 
 
-// CHECK/START SESSION AT THE VERY TOP OF THE FILE
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
+if (!isset($_SESSION['role_id']) || $_SESSION['role_id'] != 1) {
+    header("Location: ../../public/login.php");
+    exit;
+}
 
-// 1. Define the variables from the session data
 $userName = $_SESSION['user_name'] ?? 'Guest';
 $initials = '';
 
 function getInitials($fullName) {
-    // If the name is just one word, return the first letter
     if (strpos($fullName, ' ') === false) {
         return strtoupper(substr($fullName, 0, 1));
     }
@@ -30,10 +26,8 @@ function getInitials($fullName) {
     $parts = explode(' ', $fullName);
     $initials = '';
     
-    // Grab the first letter of the first word
     $initials .= strtoupper(substr($parts[0], 0, 1));
     
-    // Grab the first letter of the last word
     if (count($parts) > 1) {
         $initials .= strtoupper(substr(end($parts), 0, 1));
     }
@@ -41,7 +35,6 @@ function getInitials($fullName) {
     return $initials;
 }
 
-// 3. Set the initials variable
 if ($userName !== 'Guest') {
     $initials = getInitials($userName);
 }
@@ -124,7 +117,11 @@ if ($userName !== 'Guest') {
                             <i class="bi bi-people-fill me-2"></i> Users
                         </a>
                     </li>
-
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="../index.php">
+                            <i class="bi bi-home me-2"></i> Home
+                        </a>
+                    </li>
                 </ul>
             </div>
 
@@ -188,7 +185,6 @@ if ($userName !== 'Guest') {
                                             <td>
                                                 <span class="badge 
                                                 <?php 
-                                                    // Dynamic badge coloring based on role name
                                                     if ($user['role'] == 'Admin') echo 'bg-danger';
                                                     else if ($user['role'] == 'Manager') echo 'bg-warning text-dark';
                                                     else if ($user['role'] == 'Sales') echo 'bg-info';
@@ -231,7 +227,6 @@ if ($userName !== 'Guest') {
                     <!-- Customers Tab -->
                     <div class="tab-pane fade" id="customers">
 
-                        <!-- Customers Table -->
                         <div class="card card-custom p-4">
                             <h4 class="section-title mb-4">Customers</h4>
 
@@ -378,42 +373,31 @@ if ($userName !== 'Guest') {
                 const modalBodyMessage = document.getElementById('modalBodyMessage');
                 const modalIcon = document.getElementById('modalIcon');
 
-                // 1. Decode and set message
-                // Replace '+' with space and decode the URL encoded string
                 const decodedMsg = decodeURIComponent(msg.replace(/\+/g, ' '));
                 modalBodyMessage.textContent = decodedMsg;
 
-                // 2. Set Icon and Theme based on success/error keywords
-                // Success (Green check)
                 if (decodedMsg.toLowerCase().includes('success') || decodedMsg.toLowerCase().includes('added')) {
                     modalIcon.className = 'bi bi-check-circle-fill display-4 mb-3 text-success';
                 }
-                // Error/Failure (Red X)
                 else if (decodedMsg.toLowerCase().includes('failed') || decodedMsg.toLowerCase().includes('error')) {
                     modalIcon.className = 'bi bi-x-octagon-fill display-4 mb-3 text-danger';
                 }
-                // General/Info (Blue Info)
                 else {
                     modalIcon.className = 'bi bi-info-circle-fill display-4 mb-3 text-info';
                 }
 
-                // 3. Show the Modal
                 const statusModal = new bootstrap.Modal(modalEl);
                 statusModal.show();
 
-                // 4. Clean up the URL (Removes ?msg=... from the URL bar after showing the modal)
-                // This prevents the modal from reappearing if the user refreshes the page.
                 history.replaceState(null, '', window.location.pathname);
             }
         });
 
-        // Add this function near your other JavaScript functions
         function confirmToggleStatus(id, currentStatus) {
-            const nextStatus = (currentStatus == 1) ? 0 : 1; // If active (1), next is 0 (deactivate)
+            const nextStatus = (currentStatus == 1) ? 0 : 1; 
             const actionText = (nextStatus == 0) ? 'deactivate' : 'activate';
 
             if (confirm(`Are you sure you want to ${actionText} this account?`)) {
-                // Link to the controller file with the action, ID, AND the desired NEW status
                 window.location.href = `../../app/Controllers/UserController.php?action=toggleStatus&id=${id}&status=${nextStatus}`;
             }
         }

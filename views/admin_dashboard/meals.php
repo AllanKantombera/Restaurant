@@ -7,17 +7,17 @@ $meals = $meal->getAll();
 
 
 
-// CHECK/START SESSION AT THE VERY TOP OF THE FILE
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
-
-// 1. Define the variables from the session data
+if (!isset($_SESSION['role_id']) || $_SESSION['role_id'] != 1) {
+    header("Location: ../../public/login.php");
+    exit;
+}
 $userName = $_SESSION['user_name'] ?? 'Guest';
 $initials = '';
 
 function getInitials($fullName) {
-    // If the name is just one word, return the first letter
     if (strpos($fullName, ' ') === false) {
         return strtoupper(substr($fullName, 0, 1));
     }
@@ -25,10 +25,8 @@ function getInitials($fullName) {
     $parts = explode(' ', $fullName);
     $initials = '';
     
-    // Grab the first letter of the first word
     $initials .= strtoupper(substr($parts[0], 0, 1));
     
-    // Grab the first letter of the last word
     if (count($parts) > 1) {
         $initials .= strtoupper(substr(end($parts), 0, 1));
     }
@@ -36,7 +34,6 @@ function getInitials($fullName) {
     return $initials;
 }
 
-// 3. Set the initials variable
 if ($userName !== 'Guest') {
     $initials = getInitials($userName);
 }
@@ -119,7 +116,11 @@ if ($userName !== 'Guest') {
                             <i class="bi bi-people-fill me-2"></i> Users
                         </a>
                     </li>
-
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="../index.php">
+                            <i class="bi bi-home me-2"></i> Home
+                        </a>
+                    </li>
                 </ul>
             </div>
 
@@ -171,7 +172,6 @@ if ($userName !== 'Guest') {
 
                                     <div class="d-flex gap-2 mt-3">
                                         <?php
-                                        // --- FIX APPLIED HERE: Used $m['id'] instead of $m['meal_id'] ---
                                         $mealJson = json_encode([
                                             "id" => $m["id"], 
                                             "name" => $m["name"],
@@ -317,7 +317,6 @@ if ($userName !== 'Guest') {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        // Populate the Edit Modal (Keep your existing function here)
         function loadMealData(meal) {
             document.getElementById('edit_id').value = meal.id;
             document.getElementById('edit_name').value = meal.name;
@@ -327,14 +326,12 @@ if ($userName !== 'Guest') {
             document.getElementById('edit_status').value = meal.is_available;
         }
 
-        // Delete Confirmation (Keep your existing function here)
         function confirmDelete(id) {
             if (confirm('Are you sure you want to delete this meal? This cannot be undone.')) {
                 window.location.href = `../../app/controllers/MealController.php?action=deleteMeal&id=${id}`;
             }
         }
 
-        // --- NEW TOAST LOGIC ---
         document.addEventListener('DOMContentLoaded', function () {
             const urlParams = new URLSearchParams(window.location.search);
             const msg = urlParams.get('msg');
@@ -344,31 +341,21 @@ if ($userName !== 'Guest') {
                 const modalBodyMessage = document.getElementById('modalBodyMessage');
                 const modalIcon = document.getElementById('modalIcon');
                 
-                // 1. Decode and set message
-                // Replace '+' with space and decode the URL encoded string
                 const decodedMsg = decodeURIComponent(msg.replace(/\+/g, ' ')); 
                 modalBodyMessage.textContent = decodedMsg;
 
-                // 2. Set Icon and Theme based on success/error keywords
-                // Success (Green check)
                 if (decodedMsg.toLowerCase().includes('success') || decodedMsg.toLowerCase().includes('added')) {
                     modalIcon.className = 'bi bi-check-circle-fill display-4 mb-3 text-success';
                 } 
-                // Error/Failure (Red X)
                 else if (decodedMsg.toLowerCase().includes('failed') || decodedMsg.toLowerCase().includes('error')) {
                     modalIcon.className = 'bi bi-x-octagon-fill display-4 mb-3 text-danger';
                 }
-                // General/Info (Blue Info)
                 else {
                     modalIcon.className = 'bi bi-info-circle-fill display-4 mb-3 text-info';
                 }
-                
-                // 3. Show the Modal
                 const statusModal = new bootstrap.Modal(modalEl);
                 statusModal.show();
 
-                // 4. Clean up the URL (Removes ?msg=... from the URL bar after showing the modal)
-                // This prevents the modal from reappearing if the user refreshes the page.
                 history.replaceState(null, '', window.location.pathname);
             }
         });

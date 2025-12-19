@@ -1,3 +1,67 @@
+<?php
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+if (!isset($_SESSION['role_id']) || $_SESSION['role_id'] != 3) {
+    header("Location: ../../public/login.php");
+    exit;
+}
+$userName = $_SESSION['user_name'] ?? 'Guest';
+$initials = '';
+
+function getInitials($fullName) {
+    if (strpos($fullName, ' ') === false) {
+        return strtoupper(substr($fullName, 0, 1));
+    }
+    
+    $parts = explode(' ', $fullName);
+    $initials = '';
+    
+    $initials .= strtoupper(substr($parts[0], 0, 1));
+    
+    if (count($parts) > 1) {
+        $initials .= strtoupper(substr(end($parts), 0, 1));
+    }
+    
+    return $initials;
+}
+
+if ($userName !== 'Guest') {
+    $initials = getInitials($userName);
+}
+
+
+?>
+<?php
+require_once __DIR__ . '/../../app/Controllers/OrderController.php';
+
+$controller = new OrderController();
+$orders = $controller->getOrdersForSales();
+
+
+
+$statuses = [
+    'Pending',
+    'Preparing',
+    'Out for Delivery',
+    'Delivered',
+    'Cancelled'
+];
+?>
+
+<?php if (!empty($orders)): ?>
+<?php foreach ($orders as $order): ?>
+
+<?php endforeach; ?>
+<?php else: ?>
+<tr>
+    <td colspan="7" class="text-center text-muted">
+        No orders found
+    </td>
+</tr>
+<?php endif; ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -13,17 +77,32 @@
 
 <body>
     <!-- Fixed Navbar -->
+
     <nav class="navbar navbar-dark px-4">
         <a class="navbar-brand d-flex align-items-center" href="#">
             <div class="logo">AJ</div>
             <span class="text-light fw-bold">Aunt Joy's Restaurant</span>
         </a>
-
-        <div class="d-flex">
-            <span class="text-light me-3">sales User</span>
-            <button class="btn btn-sm btn-outline-light">Logout</button>
+    
+        <div class="dropdown">
+            <button class="btn btn-dark d-flex align-items-center dropdown-toggle" 
+                    type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                
+                <div class="logo me-2"><?= $initials; ?></div>
+                
+                <span class="text-light"><?= htmlspecialchars($userName); ?></span>
+            </button>
+    
+            <ul class="dropdown-menu dropdown-menu-end bg-dark">
+                <li>
+                    <a class="dropdown-item bg-dark text-danger" href="../../public/logout.php">
+                        Logout
+                    </a>
+                </li>
+            </ul>
         </div>
     </nav>
+
 
     <div class="container-fluid">
         <div class="row">
@@ -46,6 +125,11 @@
                     <li class="nav-item mb-2">
                         <a class="nav-link" href="orderslist.php">
                             <i class="bi bi-card-checklist me-2"></i> Orders List
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="../index.php">
+                            <i class="bi bi-home me-2"></i> Home
                         </a>
                     </li>
                 </ul>
@@ -76,149 +160,112 @@
                         <table class="table table-dark table-hover" id="pendingOrdersTable">
                             <thead>
                                 <tr>
-                                    <th>Order #</th>
+                                    <th>Order ID</th>
                                     <th>Customer</th>
                                     <th>Items</th>
                                     <th>Total</th>
                                     <th>Time Placed</th>
+                                    <th>Location</th>
                                     <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <!-- Order 1 - Ready -->
-                                <tr data-status="ready">
-                                    <td class="fw-bold">#4325</td>
-                                    <td>
+                                <?php foreach ($orders as $order): ?>
+                                <tr data-status="<?= $order['status']; ?>">
+                                    <td class="fw-bold">#
+                                        <?= $order['id']; ?>
+                                    </td>
 
-                                        <div>Peter Mwale</div>
+                                    <td>
+                                        <div>
+                                            <?= htmlspecialchars($order['customer_name'] ?? 'Guest'); ?>
+                                        </div>
+                                    </td>
 
+                                    <td>
+                                        <?php foreach ($order['items'] as $item): ?>
+                                        <span class="d-block">
+                                            <?= $item['quantity']; ?>x
+                                            <?= htmlspecialchars($item['meal_name']); ?>
+                                        </span>
+                                        <?php endforeach; ?>
+                                    </td>
+
+                                    <td class="fw-bold" style="color:#ffd700;">
+                                        K
+                                        <?= number_format($order['total_amount']); ?>
+                                    </td>
+
+                                    <td>
+                                        <span>
+                                            <?= date('H:i', strtotime($order['created_at'])); ?>
+                                        </span>
+                                        <small class="d-block text-warning">
+                                            <?= floor((time() - strtotime($order['created_at'])) / 60); ?> mins ago
+                                        </small>
                                     </td>
                                     <td>
-                                        <span class="d-block">2x Chicken Burger</span>
-                                        <small class="text-muted">1x Fries, 2x Coke</small>
+                                        <?php if (!empty($order['location'])): ?>
+                                        <?= htmlspecialchars($order['delivery_address'] ?? 'N/A') ?><br>
+
+                                        <?php
+                                                $coords = trim($order['location'], '()');
+                                                $mapUrl = "https://www.google.com/maps?q={$coords}";
+                                            ?>
+                                        <a href="<?= $mapUrl ?>" target="_blank" class="text-decoration-none">
+                                            <i class="bi bi-geo-alt-fill text-danger"></i>
+                                            View Location
+                                        </a>
+                                        <?php else: ?>
+                                        <em>No location</em>
+                                        <?php endif; ?>
                                     </td>
-                                    <td class="fw-bold" style="color: #ffd700;">K 12,500</td>
                                     <td>
-                                        <span>15:30</span>
-                                        <small class="d-block text-warning">15 mins ago</small>
+                                        <?php
+                                    $badge = match ($order['status']) {
+                                        'Pending'   => 'bg-info',
+                                        'Out for Delivery'   => 'bg-info',
+                                        'Preparing' => 'bg-warning text-dark',
+                                        'Ready'     => 'bg-success',
+                                        'Delivered' => 'bg-secondary',
+                                        'Cancelled' => 'bg-danger',
+                                    };
+                                    ?>
+                                        <span class="badge <?= $badge; ?>">
+                                            <?= ucfirst($order['status']); ?>
+                                        </span>
                                     </td>
+
                                     <td>
-                                        <span class="badge bg-success">Ready</span>
+                                        <form method="POST" action="../../app/controllers/OrderController.php"
+                                            class="d-flex gap-2">
+                                            <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
+
+                                            <select name="status" class="form-select form-select-sm"
+                                                style="color: white; background-color: black; border-color: black;">
+                                                <?php foreach ($statuses as $status): ?>
+                                                <option value="<?= $status ?>" <?=$order['status']===$status
+                                                    ? 'selected' : '' ?>>
+                                                    <?= $status ?>
+                                                </option>
+                                                <?php endforeach; ?>
+                                            </select>
                                     </td>
+
                                     <td>
-                                        <button class="btn btn-sm btn-success"
-                                            onclick="updateOrderStatus(4325, 'delivered')">
-                                            <i class="bi bi-check-lg me-1"></i>Deliver
+                                        <button type="submit" class="btn btn-primary btn-sm">
+                                            Update
                                         </button>
+                                        </form>
                                     </td>
                                 </tr>
-
-                                <!-- Order 2 - Preparing -->
-                                <tr data-status="preparing">
-                                    <td class="fw-bold">#4324</td>
-                                    <td>
-                                        <div>Sarah Kunda</div>
-                                    </td>
-                                    <td>
-                                        <span class="d-block">1x Beef Pizza</span>
-                                        <small class="text-muted">Large, Extra Cheese</small>
-                                    </td>
-                                    <td class="fw-bold" style="color: #ffd700;">K 8,200</td>
-                                    <td>
-                                        <span>15:23</span>
-                                        <small class="d-block text-warning">22 mins ago</small>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-warning text-dark">Preparing</span>
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-sm btn-info" onclick="updateOrderStatus(4324, 'ready')">
-                                            <i class="bi bi-check2-circle me-1"></i>Mark Ready
-                                        </button>
-                                    </td>
-                                </tr>
-
-                                <!-- Order 3 - Pending -->
-                                <tr data-status="pending">
-                                    <td class="fw-bold">#4323</td>
-                                    <td>
-                                        <div>Thomas Banda</div>
-                                    </td>
-                                    <td>
-                                        <span class="d-block">1x Grilled Chicken</span>
-                                        <small class="text-muted">With Vegetables, Rice</small>
-                                    </td>
-                                    <td class="fw-bold" style="color: #ffd700;">K 6,500</td>
-                                    <td>
-                                        <span>15:10</span>
-                                        <small class="d-block text-warning">35 mins ago</small>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-info">Pending</span>
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-sm btn-warning"
-                                            onclick="updateOrderStatus(4323, 'preparing')">
-                                            <i class="bi bi-arrow-clockwise me-1"></i>Start Preparing
-                                        </button>
-                                    </td>
-                                </tr>
-
-
+                                <?php endforeach; ?>
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- Delivered Orders Section -->
-                <div class="card card-custom p-4">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4 class="section-title mb-0">
-                            <i class="bi bi-check-circle-fill me-2"></i>Delivered Orders Today
-                        </h4>
-                        <div class="text-muted">Total Revenue: <span class="fw-bold text-warning">K 86,400</span></div>
-                    </div>
-
-                    <div class="table-responsive">
-                        <table class="table table-dark table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Order #</th>
-                                    <th>Customer</th>
-                                    <th>Items</th>
-                                    <th>Total</th>
-                                    <th>Order Time</th>
-                                    <th>Delivered At</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td class="fw-bold">#4320</td>
-                                    <td>Mary Phiri</td>
-                                    <td>2x Chicken Burger, 1x Fries</td>
-                                    <td class="fw-bold" style="color: #ffd700;">K 11,200</td>
-                                    <td>14:30</td>
-                                    <td>15:05</td>
-                                    <td><span class="badge bg-success">Delivered</span></td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">#4319</td>
-                                    <td>David Mwansa</td>
-                                    <td>1x Beef Pizza, 2x Coke</td>
-                                    <td class="fw-bold" style="color: #ffd700;">K 9,800</td>
-                                    <td>14:15</td>
-                                    <td>14:50</td>
-                                    <td><span class="badge bg-success">Delivered</span></td>
-                                </tr>
-
-                            </tbody>
-                        </table>
-                    </div>
-
-
-                </div>
             </div>
 
 
@@ -229,5 +276,22 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+<script>
+    function updateOrderStatus(orderId, status) {
+        if (!confirm("Update order status?")) return;
+
+        fetch('../app/controllers/SalesController.php', {
+            method: 'POST',
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+                order_id: orderId,
+                status: status
+            })
+        })
+            .then(res => res.text())
+            .then(() => location.reload())
+            .catch(err => console.error(err));
+    }
+</script>
 
 </html>

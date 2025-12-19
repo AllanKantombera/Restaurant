@@ -56,6 +56,11 @@ class AuthController {
             $_SESSION['user_id'] = $found['id'];
             $_SESSION['user_name'] = $found['name'];
             $_SESSION['role_id'] = $found['role_id'];
+            if (isset($_GET['redirect']) && $_GET['redirect'] === 'checkout') {
+                header("Location: ../views/checkout.php");
+                exit;
+            }
+            
 
             // Redirect based on role
             if ($found['role_id'] == 1) {
@@ -73,6 +78,6 @@ class AuthController {
             exit;
         }
 
-        return null; // No error
+        return null; 
     }
 }

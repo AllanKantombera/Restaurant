@@ -2,10 +2,9 @@ body {
     background-color: #0d1117;
     color: #dce7f5;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    padding-top: 70px; /* Account for fixed navbar */
+    padding-top: 70px; 
 }
 
-/* Fixed Navbar */
 .navbar {
     background: #0c0f14;
     border-bottom: 1px solid #1c2733;
@@ -52,13 +51,11 @@ body {
     margin-bottom: 10px;
 }
 
-/* Stats text colors */
 .stats-orders .card-icon { color: #65b9ff; }
 .stats-customers .card-icon { color: #65b9ff; }
 .stats-menu .card-icon { color: #65b9ff; }
 .stats-revenue .card-icon { color: #65b9ff; }
 
-/* sales stats */
 
     .stats-pending .card-icon { color: #0dcaf0; }
     .stats-delivered .card-icon { color: #0dcaf0; }
@@ -67,7 +64,7 @@ body {
     .card-custom {color: #0dcaf0;}
 .stats-delivered p, .stats-orders h3, .stats-customers h3, 
 .stats-menu h3, .stats-revenue h3 {
-    color: #adb5bd; /* Grey color for stats numbers */
+    color: #adb5bd; 
 }
 p{
     color: white;
@@ -78,7 +75,7 @@ h3{
 
 .stats-orders p, .stats-customers p, 
 .stats-menu p, .stats-revenue p {
-    color: #cfe6ff; /* Original color for labels */
+    color: #cfe6ff; 
 }
 
 .section-title {

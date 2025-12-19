@@ -8,11 +8,9 @@ class User {
     private $table = 'users';
 
     public function __construct() {
-        // Assuming Database class is autoloaded or required
         $this->db = Database::connect();
     }
 
-    // Existing: Used for public registration
     public function register($name, $email, $password) {
         // CHECK IF EMAIL EXISTS
         $check = $this->db->prepare("SELECT id FROM " . $this->table . " WHERE email = ?");
@@ -33,7 +31,6 @@ class User {
         return $stmt->execute([$name, $email, $hashed, $role_id]);
     }
 
-    // Existing: Used for login authentication
     public function login($email, $password) {
         $stmt = $this->db->prepare("SELECT * FROM " . $this->table . " WHERE email = ?");
         $stmt->execute([$email]);
@@ -48,23 +45,20 @@ class User {
             return false;
         }
     
-        return $user; // return user data
+        return $user; 
     }
     
-    //  NEW: Used by Admin to create staff/internal users (Fixes the Error)
     public function createUser($data) {
-        // 1. CHECK IF EMAIL EXISTS
+       
         $check = $this->db->prepare("SELECT id FROM " . $this->table . " WHERE email = ?");
         $check->execute([$data['email']]);
 
         if ($check->rowCount() > 0) {
-            return false; // Email already exists
+            return false; 
         }
 
-        // 2. Hash Password
         $hashed = password_hash($data['password'], PASSWORD_DEFAULT);
 
-        // 3. Insert User
         $query = "INSERT INTO " . $this->table . " 
                   (name, email, phone, password, role_id)
                   VALUES (:name, :email, :phone, :password, :role_id)";
@@ -80,21 +74,17 @@ class User {
         try {
             return $stmt->execute();
         } catch (PDOException $e) {
-            // In a production environment, you would log $e->getMessage()
             return false; 
         }
     }
     
-    // Used to check if email exists (helps with cleaner error handling in controller)
     public function checkIfEmailExists($email) {
         $check = $this->db->prepare("SELECT id FROM " . $this->table . " WHERE email = ?");
         $check->execute([$email]);
         return $check->rowCount() > 0;
     }
 
-    // Get all users for the dashboard view
     public function getAllUsers() {
-        // IMPORTANT: This query assumes you have a 'roles' table.
         $query = "SELECT u.id, u.name, u.email, u.phone, r.name as role 
                   FROM " . $this->table . " u
                   JOIN roles r ON u.role_id = r.id
@@ -123,9 +113,6 @@ class User {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
-    /**
-     * Retrieves all customers (role_id 4).
-     */
     public function getCustomers() {
         $query = "
             SELECT u.id, u.name, u.email, u.phone, u.is_active 
@@ -151,7 +138,6 @@ class User {
         try {
             return $stmt->execute();
         } catch (PDOException $e) {
-            // Log the error
             return false;
         }
     }

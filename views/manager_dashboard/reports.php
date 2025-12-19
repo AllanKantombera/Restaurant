@@ -1,3 +1,50 @@
+<?php
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+if (!isset($_SESSION['role_id']) || $_SESSION['role_id'] != 2) {
+    header("Location: ../../public/login.php");
+    exit;
+}
+
+$userName = $_SESSION['user_name'] ?? 'Guest';
+$initials = '';
+
+function getInitials($fullName) {
+    if (strpos($fullName, ' ') === false) {
+        return strtoupper(substr($fullName, 0, 1));
+    }
+    
+    $parts = explode(' ', $fullName);
+    $initials = '';
+    
+    $initials .= strtoupper(substr($parts[0], 0, 1));
+    
+    if (count($parts) > 1) {
+        $initials .= strtoupper(substr(end($parts), 0, 1));
+    }
+    
+    return $initials;
+}
+
+if ($userName !== 'Guest') {
+    $initials = getInitials($userName);
+}
+
+require_once __DIR__ . '/../../app/Controllers/OrderController.php';
+
+
+$orderModel = new Order();
+$orderItemModel = new OrderItem();
+
+$month = $_GET['month'] ?? date('m');
+$year  = $_GET['year'] ?? date('Y');
+
+$summary = $orderModel->getMonthlyReport($month, $year);
+$bestSelling = $orderItemModel->getBestSellingItems($month, $year);
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -12,16 +59,33 @@
 </head>
 
 <body>
-    <!-- Fixed Navbar -->
+
     <nav class="navbar navbar-dark px-4">
         <a class="navbar-brand d-flex align-items-center" href="#">
             <div class="logo">AJ</div>
             <span class="text-light fw-bold">Aunt Joy's Restaurant</span>
         </a>
 
-        <div class="d-flex">
-            <span class="text-light me-3">Admin User</span>
-            <button class="btn btn-sm btn-outline-light">Logout</button>
+        <div class="dropdown">
+            <button class="btn btn-dark d-flex align-items-center dropdown-toggle" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false">
+
+                <div class="logo me-2">
+                    <?= $initials; ?>
+                </div>
+
+                <span class="text-light">
+                    <?= htmlspecialchars($userName); ?>
+                </span>
+            </button>
+
+            <ul class="dropdown-menu dropdown-menu-end bg-dark">
+                <li>
+                    <a class="dropdown-item bg-dark text-danger" href="../../public/logout.php">
+                        Logout
+                    </a>
+                </li>
+            </ul>
         </div>
     </nav>
 
@@ -31,20 +95,20 @@
             <div class="col-md-2 sidebar">
                 <ul class="nav flex-column">
                     <li class="nav-item mb-2">
-                        <a class="nav-link active" href="index.php">
+                        <a class="nav-link" href="index.php">
                             <i class="bi bi-speedometer2 me-2"></i> Overview
                         </a>
                     </li>
-                
+
                     <li class="nav-item mb-2">
                         <a class="nav-link active" href="reports.php">
                             <i class="bi bi-graph-up me-2"></i> Reports
                         </a>
                     </li>
-                
+
                     <li class="nav-item mb-2">
-                        <a class="nav-link" href="reportsExport.php">
-                            <i class="bi bi-download me-2"></i> Export Reports
+                        <a class="nav-link" href="../index.php">
+                            <i class="bi bi-home me-2"></i> Home
                         </a>
                     </li>
 
@@ -54,203 +118,142 @@
 
             <!-- MAIN CONTENT -->
             <div class="col-md-10 main-content">
+
+                <!-- Header -->
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2 class="section-title">Analytics & Reports</h2>
-                    <div class="d-flex gap-2">
-                        
-                    </div>
+
+                    <form method="GET" class="d-flex gap-2">
+                        <select name="month" class="form-select bg-dark text-white border-secondary">
+                            <?php for ($m = 1; $m <= 12; $m++): ?>
+                            <option value="<?= $m ?>" <?=$m==$month ? 'selected' : '' ?>>
+                                <?= date("F", mktime(0, 0, 0, $m, 1)) ?>
+                            </option>
+                            <?php endfor; ?>
+                        </select>
+
+                        <select name="year" class="form-select bg-dark text-white border-secondary">
+                            <?php for ($y = date('Y'); $y >= 2023; $y--): ?>
+                            <option value="<?= $y ?>" <?=$y==$year ? 'selected' : '' ?>>
+                                <?= $y ?>
+                            </option>
+                            <?php endfor; ?>
+                        </select>
+
+                        <button class="btn btn-primary fw-semibold">
+                            <i class="bi bi-filter"></i> Apply
+                        </button>
+                    </form>
                 </div>
 
                 <!-- Key Metrics Cards -->
                 <div class="row mb-4">
+
                     <!-- Total Revenue -->
                     <div class="col-md-3 mb-3">
-                        <div class="card card-custom p-3 text-center">
+                        <div class="card card-custom p-4 text-center">
                             <i class="bi bi-currency-dollar card-icon"></i>
-                            <h3 style="color: #adb5bd;">K 425,600</h3>
-                            <p style="color: #cfe6ff;">Total Revenue</p>
-                            
+                            <h3 class="metric-value">
+                                K
+                                <?= number_format($summary['total_revenue'] ?? 0) ?>
+                            </h3>
+                            <p class="metric-label">Total Revenue</p>
                         </div>
                     </div>
 
                     <!-- Total Orders -->
                     <div class="col-md-3 mb-3">
-                        <div class="card card-custom p-3 text-center">
+                        <div class="card card-custom p-4 text-center">
                             <i class="bi bi-cart-check card-icon"></i>
-                            <h3 style="color: #adb5bd;">156</h3>
-                            <p style="color: #cfe6ff;">Total Orders</p>
-                            
+                            <h3 class="metric-value">
+                                <?= $summary['total_orders'] ?? 0 ?>
+                            </h3>
+                            <p class="metric-label">Total Orders</p>
                         </div>
                     </div>
 
-                    <!-- Average Order Value -->
+                    <!-- Avg Order -->
                     <div class="col-md-3 mb-3">
-                        <div class="card card-custom p-3 text-center">
+                        <div class="card card-custom p-4 text-center">
                             <i class="bi bi-graph-up card-icon"></i>
-                            <h3 style="color: #adb5bd;">K 2,728</h3>
-                            <p style="color: #cfe6ff;">Avg Order Value</p>
-                           
+                            <h3 class="metric-value">
+                                K
+                                <?= number_format(
+                        ($summary['total_orders'] ?? 0) > 0
+                        ? ($summary['total_revenue'] / $summary['total_orders'])
+                        : 0
+                    ) ?>
+                            </h3>
+                            <p class="metric-label">Avg Order Value</p>
                         </div>
                     </div>
 
-                    <!-- Best Selling Item -->
+                    <!-- Best Seller -->
                     <div class="col-md-3 mb-3">
-                        <div class="card card-custom p-3 text-center">
+                        <div class="card card-custom p-4 text-center">
                             <i class="bi bi-trophy card-icon"></i>
-                            <h3 style="color: #adb5bd;">42</h3>
-                            <p style="color: #cfe6ff;">Chicken Burger Sales</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Charts and Graphs Row -->
-                <div class="row mb-4">
-                    <!-- Revenue Chart -->
-                    <div class="col-md-12 mb-3">
-                        <div class="card card-custom p-4">
-                            <h4 class="section-title mb-4">Revenue Trend</h4>
-                            <div class="revenue-chart"
-                                style="height: 300px; background: #0d1117; border-radius: 8px; padding: 20px;">
-                                <!-- Simple CSS Bar Chart -->
-                                <div class="d-flex align-items-end justify-content-between h-100">
-                                    <div class="text-center mx-2">
-                                        <div class="bg-primary rounded" style="height: 120px; width: 40px;"></div>
-                                        <div class="text-muted small mt-2">Mon</div>
-                                    </div>
-                                    <div class="text-center mx-2">
-                                        <div class="bg-primary rounded" style="height: 180px; width: 40px;"></div>
-                                        <div class="text-muted small mt-2">Tue</div>
-                                    </div>
-                                    <div class="text-center mx-2">
-                                        <div class="bg-primary rounded" style="height: 220px; width: 40px;"></div>
-                                        <div class="text-muted small mt-2">Wed</div>
-                                    </div>
-                                    <div class="text-center mx-2">
-                                        <div class="bg-primary rounded" style="height: 280px; width: 40px;"></div>
-                                        <div class="text-muted small mt-2">Thu</div>
-                                    </div>
-                                    <div class="text-center mx-2">
-                                        <div class="bg-primary rounded" style="height: 240px; width: 40px;"></div>
-                                        <div class="text-muted small mt-2">Fri</div>
-                                    </div>
-                                    <div class="text-center mx-2">
-                                        <div class="bg-primary rounded" style="height: 300px; width: 40px;"></div>
-                                        <div class="text-muted small mt-2">Sat</div>
-                                    </div>
-                                    <div class="text-center mx-2">
-                                        <div class="bg-primary rounded" style="height: 200px; width: 40px;"></div>
-                                        <div class="text-muted small mt-2">Sun</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    
-                </div>
-
-                <!-- Best Selling Items -->
-                <div class="row">
-                    <!-- Top Selling Items -->
-                    <div class="col-md-6 mb-3">
-                        <div class="card card-custom p-4">
-                            <h4 class="section-title mb-4">Best Selling Items</h4>
-                            <div class="best-items">
-                                <div class="d-flex align-items-center justify-content-between mb-3 p-2 rounded"
-                                    style="background: rgba(30, 42, 56, 0.5);">
-                                    <div class="d-flex align-items-center">
-                                        <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-3"
-                                            style="width: 40px; height: 40px; color: white;">
-                                            <i class="bi bi-cup-hot"></i>
-                                        </div>
-                                        <div>
-                                            <div style="color: #dce7f5;">Chicken Burger</div>
-                                            <small class="text-muted">Main Course</small>
-                                        </div>
-                                    </div>
-                                    <div class="text-end">
-                                        <div style="color: #ffd700;" class="fw-bold">42 orders</div>
-                                        <small class="text-success">K 189,000</small>
-                                    </div>
-                                </div>
-
-                                <div class="d-flex align-items-center justify-content-between mb-3 p-2 rounded"
-                                    style="background: rgba(30, 42, 56, 0.5);">
-                                    <div class="d-flex align-items-center">
-                                        <div class="rounded-circle bg-success d-flex align-items-center justify-content-center me-3"
-                                            style="width: 40px; height: 40px; color: white;">
-                                            <i class="bi bi-egg-fried"></i>
-                                        </div>
-                                        <div>
-                                            <div style="color: #dce7f5;">Beef Pizza</div>
-                                            <small class="text-muted">Main Course</small>
-                                        </div>
-                                    </div>
-                                    <div class="text-end">
-                                        <div style="color: #ffd700;" class="fw-bold">38 orders</div>
-                                        <small class="text-success">K 156,000</small>
-                                    </div>
-                                </div>
-
-                                <div class="d-flex align-items-center justify-content-between mb-3 p-2 rounded"
-                                    style="background: rgba(30, 42, 56, 0.5);">
-                                    <div class="d-flex align-items-center">
-                                        <div class="rounded-circle bg-warning d-flex align-items-center justify-content-center me-3"
-                                            style="width: 40px; height: 40px; color: black;">
-                                            <i class="bi bi-basket"></i>
-                                        </div>
-                                        <div>
-                                            <div style="color: #dce7f5;">Grilled Chicken</div>
-                                            <small class="text-muted">Main Course</small>
-                                        </div>
-                                    </div>
-                                    <div class="text-end">
-                                        <div style="color: #ffd700;" class="fw-bold">35 orders</div>
-                                        <small class="text-success">K 122,500</small>
-                                    </div>
-                                </div>
-
-                                <div class="d-flex align-items-center justify-content-between mb-3 p-2 rounded"
-                                    style="background: rgba(30, 42, 56, 0.5);">
-                                    <div class="d-flex align-items-center">
-                                        <div class="rounded-circle bg-info d-flex align-items-center justify-content-center me-3"
-                                            style="width: 40px; height: 40px; color: white;">
-                                            <i class="bi bi-flower1"></i>
-                                        </div>
-                                        <div>
-                                            <div style="color: #dce7f5;">Vegetable Salad</div>
-                                            <small class="text-muted">Appetizer</small>
-                                        </div>
-                                    </div>
-                                    <div class="text-end">
-                                        <div style="color: #ffd700;" class="fw-bold">28 orders</div>
-                                        <small class="text-success">K 89,600</small>
-                                    </div>
-                                </div>
-                            </div>
+                            <h5 class="metric-value">
+                                <?= $bestSelling[0]['name'] ?? 'N/A' ?>
+                            </h5>
+                            <p class="metric-label">Best Selling Item</p>
                         </div>
                     </div>
 
                 </div>
+
+                <!-- Best Selling Table -->
+                <div class="card card-custom p-3">
+                    <h5 class="mb-3 fw-semibold">
+                        Best Selling Meals
+                    </h5>
+
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Meal</th>
+                                    <th>Quantity Sold</th>
+                                    <th>Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (!empty($bestSelling)): ?>
+                                <?php foreach ($bestSelling as $item): ?>
+                                <tr>
+                                    <td>
+                                        <?= htmlspecialchars($item['name']) ?>
+                                    </td>
+                                    <td>
+                                        <?= $item['total_sold'] ?>
+                                    </td>
+                                    <td>K
+                                        <?= number_format($item['revenue']) ?>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                                <?php else: ?>
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">
+                                        No data available
+                                    </td>
+                                </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div><br>
+                <a href="../../app/controllers/ExportController.php?month=<?= $month ?>&year=<?= $year ?>"
+                    class="btn btn-primary">
+                    <i class="bi bi-file-earmark-excel"></i> Export Excel
+                </a>
+                <a href="print_report.php?month=<?= $month ?>&year=<?= $year ?>" target="_blank"
+                    class="btn btn-primary">
+                    <i class="bi bi-file-earmark-pdf"></i> Export PDF
+                </a>
+
             </div>
 
-            <script>
-                // Simple time period selector
-                document.addEventListener('DOMContentLoaded', function () {
-                    const periodSelect = document.querySelector('select');
-                    periodSelect.addEventListener('change', function () {
-                        // In real application, this would fetch new data based on selected period
-                        console.log('Period changed to:', this.value);
-                    });
-                });
-            </script>
 
-
-
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

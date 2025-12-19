@@ -9,7 +9,6 @@ $is_logged_in = isset($_SESSION['user_id']);
 $userName = $_SESSION['user_name'] ?? 'Guest';
 $initials = '';
 
-// Function to extract initials (e.g., Allan Canto -> AC)
 function getInitials($fullName) {
     $parts = explode(' ', $fullName);
     $initials = strtoupper(substr($parts[0], 0, 1));
@@ -25,12 +24,12 @@ if ($is_logged_in) {
 }
 
 require_once __DIR__ . '/../app/Models/Meal.php'; 
-// Assuming the path needs adjustment based on the view location relative to the model
 
 $mealModel = new Meal();
 $latestMeals = $mealModel->getLatestMeals();
 
-$cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;                
+$cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
+               
 ?>
 
 <!DOCTYPE html>
@@ -51,81 +50,81 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
 <body>
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg fixed-top">
-    <div class="container">
+        <div class="container">
 
-        <a class="navbar-brand fw-bold" href="#">
-            <img src="../assests/img/logo1.png" alt="logo Logo" height="40" style="border-radius: 30px;">
-        </a>
+            <a class="navbar-brand fw-bold" href="#">
+                <img src="../assests/img/logo11.png" alt="logo Logo" height="40"
+                    style="border-style: solid; border-radius: 50px; border-color: #38bdf8;">
+            </a>
 
-        <button class="navbar-toggler bg-dark" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+            <button class="navbar-toggler bg-dark" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-        <div class="collapse navbar-collapse" id="nav">
+            <div class="collapse navbar-collapse" id="nav">
 
-            <ul class="navbar-nav">
-                <li class="nav-item"><a href="#" class="nav-link">Home</a></li>
-                <li class="nav-item"><a href="#menu" class="nav-link">Menu</a></li>
-                <li class="nav-item"><a href="#features" class="nav-link">Features</a></li>
-                <li class="nav-item"><a href="#order" class="nav-link">Order</a></li>
-            </ul>
-               
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a href="index.php" class="nav-link">Home</a></li>
+                    <li class="nav-item"><a href="menu.php" class="nav-link">Menu</a></li>
+                    <li class="nav-item"><a href="myorders.php" class="nav-link">My Orders</a></li>
+                    <li class="nav-item">
+                        <a href="cart.php" class="nav-link cart-link">
+                            <i class="fas fa-shopping-cart me-1"></i>
+                            Cart (<span id="cart-count">
+                                <?= $cartCount ?>
+                            </span>)
+                        </a>
+                    </li>
+                </ul>
 
-                <span class="badge bg-light text-dark p-2">
-                    Cart (<?= $cartCount ?>)
-                </span>
 
-            <form class="d-flex ms-auto me-lg-3 mt-2 mt-lg-0" role="search">
-                <input class="form-control me-2 rounded-pill" type="search" placeholder="Search food..."
-                    aria-label="Search">
-                <button class="btn btn-outline-light rounded-pill" type="submit">
-                    <i class="fa fa-search"></i>
-                </button>
-            </form>
+                <form class="d-flex ms-auto me-lg-3 mt-2 mt-lg-0" action="search.php" method="GET" role="search">
 
-            <div class="d-flex mt-2 mt-lg-0">
-                <?php if ($is_logged_in): ?>
+                    <input class="form-control me-2 rounded-pill" type="search" name="q"
+                        value="<?= htmlspecialchars($_GET['q'] ?? '') ?>" placeholder="Search food..."
+                        aria-label="Search">
+
+                    <button class="btn btn-outline-light rounded-pill" type="submit">
+                        <i class="fa fa-search"></i>
+                    </button>
+                </form>
+
+                <div class="d-flex mt-2 mt-lg-0">
+                    <?php if ($is_logged_in): ?>
                     <div class="dropdown">
-                        <button class="btn btn-dark d-flex align-items-center dropdown-toggle rounded-pill px-3" 
-                                type="button" data-bs-toggle="dropdown" aria-expanded="false"
-                                style="background-color: #212529; border-color: #343a40;">
-                            
-                            <span class="me-2 fw-bold text-uppercase text-light" style="
-                                background-color: #000000; /* Use a distinct accent color for the initials background */
-                                border: 1px solid #000000; 
-                                border-radius: 4px; 
-                                padding: 2px 7px;
-                                font-size: 0.9rem;">
-                                <?= htmlspecialchars($initials); ?>
+                        <button class="btn btn-dark d-flex align-items-center dropdown-toggle rounded-pill px-3"
+                            type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                            style="background-color: #212529; border-color: #343a40;">
+
+                            <span class="d-none d-md-inline me-1 text-light">
+                                <?= htmlspecialchars($userName); ?>
                             </span>
-                            
-                            <span class="d-none d-md-inline me-1 text-light"><?= htmlspecialchars($userName); ?></span>
                         </button>
 
-                        <ul class="dropdown-menu dropdown-menu-end" 
+                        <ul class="dropdown-menu dropdown-menu-end"
                             style="background-color: #212529; border-color: #343a40;">
-                            
-                             <li>
+
+                            <li>
                                 <a class="dropdown-item text-danger" href="../public/logout.php"
-                                   style="background-color: #212529;">
+                                    style="background-color: #212529;">
                                     <i class="fa fa-sign-out-alt me-1"></i> Logout
                                 </a>
                             </li>
                         </ul>
                     </div>
-                <?php else: ?>
-                    <a href="../public/login.php" class="btn btn-primary rounded-pill">
+                    <?php else: ?>
+                    <a href="../public/login.php" class="btn rounded-pill" style="background-color: #38bdf8;">
                         <i class="fa fa-sign-in-alt me-1"></i> Login
                     </a>
-                <?php endif; ?>
+                    <?php endif; ?>
+                </div>
             </div>
-        </div>
     </nav>
 
 
     <!-- HERO -->
     <section class="hero" style="
-    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+    background: linear-gradient(rgba(0, 0, 0, 0.349), rgba(0, 0, 0, 0.404)),
         url('../assests/img/cover1.jpg') center/cover no-repeat;">
         <div class="container">
             <h1 class="display-4 fw-bold">Delicious Meals Delivered Across Mzuzu</h1>
@@ -137,48 +136,53 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
 
     <!-- MENU PREVIEW -->
     <section class="py-5" id="menu">
-    <div class="container">
-        <div class="section-header text-center mb-5">
-            <h2>Popular Meals</h2>
-            <p>Freshly prepared and always delicious</p>
-        </div>
+        <div class="container">
+            <div class="section-header text-center mb-5">
+                <h2>Popular Meals</h2>
+                <p>Freshly prepared and always delicious</p>
+            </div>
 
-        <div class="row g-4 justify-content-center">
-            
-            <?php if (!empty($latestMeals)): ?>
+            <div class="row g-4 justify-content-center">
+
+                <?php if (!empty($latestMeals)): ?>
                 <?php foreach ($latestMeals as $meal): ?>
-                    <div class="col-md-4 col-sm-6">
-                        <div class="menu-card shadow-sm border border-secondary">
-                            <img src="../photos/<?= htmlspecialchars($meal['image_url'] ?? '../assests/img/default-food.jpg'); ?>" 
-                                 alt="<?= htmlspecialchars($meal['name']); ?>"
-                                 class="img-fluid">
-                            <div class="p-3">
-                                <h5 class="fw-bold"><?= htmlspecialchars($meal['name']); ?></h5>
-                                <p class="text-muted small"><?= htmlspecialchars(substr($meal['description'], 0, 50)) . '...'; ?></p>
-                                <span class="price fw-bolder">MWK <?= number_format($meal['price']); ?></span>
-                                <button class="btn btn-sky w-100 mt-3 add-to-cart-btn"
-                                    data-id="<?= htmlspecialchars($meal['id']); ?>"
-                                    data-name="<?= htmlspecialchars($meal['name']); ?>"
-                                    data-price="<?= htmlspecialchars($meal['price']); ?>">
+                <div class="col-md-4 col-sm-6">
+                    <div class="menu-card shadow-sm border border-secondary">
+                        <img src="../photos/<?= htmlspecialchars($meal['image_url'] ?? '../assests/img/default-food.jpg'); ?>"
+                            alt="<?= htmlspecialchars($meal['name']); ?>" class="img-fluid">
+                        <div class="p-3">
+                            <h5 class="fw-bold">
+                                <?= htmlspecialchars($meal['name']); ?>
+                            </h5>
+                            <p class="text-muted small">
+                                <?= htmlspecialchars(substr($meal['description'], 0, 50)) . '...'; ?>
+                            </p>
+                            <span class="price fw-bolder">MWK
+                                <?= number_format($meal['price']); ?>
+                            </span>
+                            <button class="btn btn-sky w-100 mt-3 add-to-cart-btn"
+                                data-id="<?= htmlspecialchars($meal['id']); ?>"
+                                data-name="<?= htmlspecialchars($meal['name']); ?>"
+                                data-price="<?= htmlspecialchars($meal['price']); ?>">
                                 Add To Cart
                             </button>
 
-                            </div>
                         </div>
                     </div>
+                </div>
                 <?php endforeach; ?>
-            <?php else: ?>
+                <?php else: ?>
                 <div class="col-12 text-center text-muted py-5">
                     <p>Sorry, no meals are currently available on the menu!</p>
                 </div>
-            <?php endif; ?>
+                <?php endif; ?>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="menu.php." class="btn btn-sky">View Full Menu</a>
+            </div>
         </div>
-        
-        <div class="text-center mt-4">
-            <a href="menu.php." class="btn btn-sky">View Full Menu</a>
-        </div>
-    </div>
-</section>
+    </section>
 
     <!-- FEATURES -->
     <section class="features-section" id="features">
@@ -239,28 +243,167 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
     </footer>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        window.addEventListener('scroll', function () {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
         document.querySelectorAll('.add-to-cart-btn').forEach(button => {
             button.addEventListener('click', function () {
-        
+                const originalText = this.innerHTML;
+                this.innerHTML = '<span class="loading"></span> Adding...';
+                this.classList.add('loading');
+                this.disabled = true;
+
                 const meal = {
-                    id: this.getAttribute('data-id'),
-                    name: this.getAttribute('data-name'),
-                    price: this.getAttribute('data-price')
+                    action: 'add',
+                    meal_id: this.dataset.id,
+                    meal_name: this.dataset.name,
+                    meal_price: this.dataset.price
                 };
-        
+
                 fetch('../app/controllers/CartController.php', {
                     method: 'POST',
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(meal)
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                        "X-Requested-With": "XMLHttpRequest"
+                    },
+                    body: new URLSearchParams(meal)
                 })
-                .then(res => res.json())
-                .then(data => {
-                    alert(data.message);
-                })
-                .catch(err => console.error("Cart Error:", err));
+                    .then(res => res.json())
+                    .then(data => {
+                        showNotification(data.message, 'success');
+
+                        updateCartCount();
+
+
+                        this.innerHTML = originalText;
+                        this.classList.remove('loading');
+                        this.disabled = false;
+
+                    })
+                    .catch(err => {
+                        console.error("Cart Error:", err);
+                        showNotification('Already in Cart', 'error');
+
+                        this.innerHTML = originalText;
+                        this.classList.remove('loading');
+                        this.disabled = false;
+                    });
             });
         });
-        </script>
-        
+
+        function updateCartCount() {
+            fetch('../app/controllers/CartController.php?action=count', {
+                method: 'GET',
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+            })
+                .then(res => res.text())
+                .then(count => {
+                    const cartCountEl = document.getElementById('cart-count');
+                    if (cartCountEl) {
+                        cartCountEl.textContent = count;
+                    }
+                });
+        }
+
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            const existingNotifications = document.querySelectorAll('.custom-notification');
+            existingNotifications.forEach(notification => notification.remove());
+
+            // Create notification 
+            const notification = document.createElement('div');
+            notification.className = `custom-notification alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show`;
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                z-index: 9999;
+                min-width: 300px;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+                border: none;
+                border-radius: 10px;
+                animation: slideInRight 0.2s ease;
+                background-color: #38bdf8;
+            `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.style.animation = 'slideOutRight 0.3s ease';
+                    setTimeout(() => notification.remove(), 300);
+                }
+            }, 5000);
+        }
+
+        // Animation keyframes
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOutRight {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        function updateCartCount() {
+            fetch('../app/controllers/CartController.php?action=getCount')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.count !== undefined) {
+                        const cartBadge = document.querySelector('.cart-count');
+                        if (cartBadge) {
+                            cartBadge.textContent = data.count;
+
+                            cartBadge.style.transform = 'scale(1.5)';
+                            setTimeout(() => {
+                                cartBadge.style.transform = 'scale(1)';
+                            }, 300);
+                        }
+                    }
+                });
+        }
+
+
+
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                if (href !== '#') {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) {
+                        window.scrollTo({
+                            top: target.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                }
+            });
+        });
+    </script>
+
 </body>
+
 </html>

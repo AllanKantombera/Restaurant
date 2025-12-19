@@ -27,34 +27,33 @@ class Meal {
         return $stmt->execute();
     }
 
-public function getAll() {
-    $stmt = $this->conn->prepare("SELECT * FROM meals ORDER BY id DESC");
-    $stmt->execute();
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-public function getById($id) {
-    $sql = "SELECT * FROM meals WHERE id = ?";
-    $stmt = $this->conn->prepare($sql);
-    $stmt->execute([$id]);
-    return $stmt->fetch(PDO::FETCH_ASSOC);
-}
-public function updateMeal($data) {
-    $sql = "UPDATE meals SET name=?, description=?, price=?, category_id=?, is_available=?, image_url=? WHERE id=?";
-    $stmt = $this->conn->prepare($sql);
-    return $stmt->execute([
-        $data['name'],
-        $data['description'],
-        $data['price'],
-        $data['category_id'],
-        $data['is_available'],
-        $data['image_url'],
-        $data['id']
-    ]);
-}
+    public function getAll() {
+        $stmt = $this->conn->prepare("SELECT * FROM meals ORDER BY id DESC");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    public function getById($id) {
+        $sql = "SELECT * FROM meals WHERE id = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    public function updateMeal($data) {
+        $sql = "UPDATE meals SET name=?, description=?, price=?, category_id=?, is_available=?, image_url=? WHERE id=?";
+        $stmt = $this->conn->prepare($sql);
+        return $stmt->execute([
+            $data['name'],
+            $data['description'],
+            $data['price'],
+            $data['category_id'],
+            $data['is_available'],
+            $data['image_url'],
+            $data['id']
+        ]);
+    }
 
     
 public function delete($id) {
-    // Double check if your database column is 'meal_id' or 'id'
     $query = "DELETE FROM " . $this->table . " WHERE id = :id";
     
     $stmt = $this->conn->prepare($query);
@@ -66,37 +65,57 @@ public function delete($id) {
     return false;
 }
 
-public function getLatestMeals() {
-    $query = "
-       SELECT * FROM meals ORDER BY id DESC LIMIT 3
-    ";
-    
-    $stmt = $this->conn->prepare($query);
-    
-    try {
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    } catch (PDOException $e) {
-        // Log error
-        return [];
+    public function getLatestMeals() {
+        $query = "
+        SELECT * FROM meals WHERE is_available = 1 ORDER BY id DESC LIMIT 3
+        ";
+        
+        $stmt = $this->conn->prepare($query);
+        
+        try {
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            // Log error
+            return [];
+        }
     }
-}
 
-public function Menu() {
-    $query = "
-       SELECT * FROM meals ORDER BY id DESC LIMIT 3
-    ";
-    
-    $stmt = $this->conn->prepare($query);
-    
-    try {
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    } catch (PDOException $e) {
-        // Log error
-        return [];
+    public function Menu() {
+        $query = "
+        SELECT * FROM meals WHERE is_available = 1 ORDER BY id DESC
+        ";
+        
+        $stmt = $this->conn->prepare($query);
+        
+        try {
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            // Log error
+            return [];
+        }
     }
-}
+    public function getByCategory($category_id) {
+        $sql = "SELECT * FROM meals 
+                WHERE category_id = ? AND is_available = 1
+                ORDER BY id DESC";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([$category_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    public function search($keyword) {
+        $sql = "SELECT * FROM meals
+                WHERE is_available = 1
+                AND (name LIKE :keyword OR description LIKE :keyword)
+                ORDER BY name ASC";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindValue(':keyword', '%' . $keyword . '%', PDO::PARAM_STR);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
 
 }

@@ -1,3 +1,76 @@
+<?php
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+if (!isset($_SESSION['role_id']) || $_SESSION['role_id'] != 3) {
+    header("Location: ../../public/login.php");
+    exit;
+}
+$userName = $_SESSION['user_name'] ?? 'Guest';
+$initials = '';
+
+function getInitials($fullName) {
+    if (strpos($fullName, ' ') === false) {
+        return strtoupper(substr($fullName, 0, 1));
+    }
+    
+    $parts = explode(' ', $fullName);
+    $initials = '';
+    
+    $initials .= strtoupper(substr($parts[0], 0, 1));
+    
+    if (count($parts) > 1) {
+        $initials .= strtoupper(substr(end($parts), 0, 1));
+    }
+    
+    return $initials;
+}
+
+if ($userName !== 'Guest') {
+    $initials = getInitials($userName);
+}
+
+require_once __DIR__ . '/../../app/models/Database.php';
+
+$db = new Database();
+$conn = $db->connect();
+
+
+$stmt = $conn->prepare("
+    SELECT COUNT(*) 
+    FROM orders 
+    WHERE status = 'Pending'
+");
+$stmt->execute();
+$pendingOrders = $stmt->fetchColumn();
+
+$stmt = $conn->prepare("
+    SELECT COUNT(*) 
+    FROM orders 
+    WHERE status = 'Delivered'
+");
+$stmt->execute();
+$deliveredOrders = $stmt->fetchColumn();
+
+$stmt = $conn->prepare("
+    SELECT COUNT(*) 
+    FROM orders 
+    WHERE DATE(created_at) = CURDATE()
+");
+$stmt->execute();
+$totalOrdersToday = $stmt->fetchColumn();
+
+$stmt = $conn->prepare("
+    SELECT SUM(total_amount) 
+    FROM orders 
+    WHERE status = 'Delivered'
+      AND DATE(created_at) = CURDATE()
+");
+$stmt->execute();
+$totalRevenueToday = $stmt->fetchColumn() ?? 0;
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -12,16 +85,33 @@
 </head>
 
 <body>
-    <!-- Fixed Navbar -->
+
     <nav class="navbar navbar-dark px-4">
         <a class="navbar-brand d-flex align-items-center" href="#">
             <div class="logo">AJ</div>
             <span class="text-light fw-bold">Aunt Joy's Restaurant</span>
         </a>
 
-        <div class="d-flex">
-            <span class="text-light me-3">sales User</span>
-            <button class="btn btn-sm btn-outline-light">Logout</button>
+        <div class="dropdown">
+            <button class="btn btn-dark d-flex align-items-center dropdown-toggle" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false">
+
+                <div class="logo me-2">
+                    <?= $initials; ?>
+                </div>
+
+                <span class="text-light">
+                    <?= htmlspecialchars($userName); ?>
+                </span>
+            </button>
+
+            <ul class="dropdown-menu dropdown-menu-end bg-dark">
+                <li>
+                    <a class="dropdown-item bg-dark text-danger" href="../../public/logout.php">
+                        Logout
+                    </a>
+                </li>
+            </ul>
         </div>
     </nav>
 
@@ -48,6 +138,11 @@
                             <i class="bi bi-card-checklist me-2"></i> Orders List
                         </a>
                     </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="../index.php">
+                            <i class="bi bi-home me-2"></i> Home
+                        </a>
+                    </li>
                 </ul>
             </div>
 
@@ -58,20 +153,21 @@
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2 class="section-title">Sales Overview</h2>
                     <div class="text-end">
-                        <div class="text-light small">Today: <span id="currentDate"></span></div>
-                        <div class="text-muted small" id="currentTime"></div>
+
                     </div>
                 </div>
 
                 <!-- STAT CARDS -->
                 <div class="row mb-4 text-light">
+
                     <!-- Pending Orders -->
                     <div class="col-md-3 mb-3">
                         <div class="card card-custom p-3 text-center stats-pending">
                             <i class="bi bi-clock-history card-icon"></i>
-                            <h3>8</h3>
+                            <h3>
+                                <?= $pendingOrders ?>
+                            </h3>
                             <p>Pending Orders</p>
-                            <small class="text-warning"><i class="bi bi-arrow-up"></i> 2 waiting</small>
                         </div>
                     </div>
 
@@ -79,9 +175,10 @@
                     <div class="col-md-3 mb-3">
                         <div class="card card-custom p-3 text-center stats-delivered">
                             <i class="bi bi-check-circle-fill card-icon"></i>
-                            <h3>24</h3>
+                            <h3>
+                                <?= $deliveredOrders ?>
+                            </h3>
                             <p>Delivered Orders</p>
-                            <small class="text-success"><i class="bi bi-arrow-up"></i> 65% success rate</small>
                         </div>
                     </div>
 
@@ -89,9 +186,10 @@
                     <div class="col-md-3 mb-3">
                         <div class="card card-custom p-3 text-center stats-total">
                             <i class="bi bi-cart-check-fill card-icon"></i>
-                            <h3>32</h3>
+                            <h3>
+                                <?= $totalOrdersToday ?>
+                            </h3>
                             <p>Total Orders Today</p>
-                            <small class="text-info">+4 from yesterday</small>
                         </div>
                     </div>
 
@@ -99,150 +197,16 @@
                     <div class="col-md-3 mb-3">
                         <div class="card card-custom p-3 text-center stats-revenue">
                             <i class="bi bi-cash-coin card-icon"></i>
-                            <h3>K 86,400</h3>
+                            <h3>K
+                                <?= number_format($totalRevenueToday) ?>
+                            </h3>
                             <p>Total Revenue Today</p>
-                            <small class="text-success"><i class="bi bi-arrow-up"></i> 12% growth</small>
                         </div>
                     </div>
+
                 </div>
 
-                <!-- Top Pending Orders Table -->
-                <div class="card card-custom p-4">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4 class="section-title mb-0">Top Pending Orders</h4>
-                        <a href="#" class="btn btn-sm btn-outline-primary">View All Orders</a>
-                    </div>
 
-                    <div class="table-responsive">
-                        <table class="table table-dark table-hover mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Order #</th>
-                                    <th>Customer</th>
-                                    <th>Items</th>
-                                    <th>Total</th>
-                                    <th>Time Placed</th>
-                                    <th>Status</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td class="fw-bold">#4325</td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="rounded-circle d-flex align-items-center justify-content-center me-2"
-                                                style="width: 32px; height: 32px; background: linear-gradient(135deg, #65b9ff, #79bffd); color: white; font-size: 0.8rem; font-weight: bold;">
-                                                PM
-                                            </div>
-                                            Peter Mwale
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="d-block">2x Chicken Burger</span>
-                                        <small class="text-muted">1x Fries, 2x Coke</small>
-                                    </td>
-                                    <td class="fw-bold" style="color: #ffd700;">K 12,500</td>
-                                    <td>
-                                        <span class="text-warning">15 mins ago</span>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-warning text-dark">Preparing</span>
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-sm btn-success">
-                                            <i class="bi bi-check-lg me-1"></i>Ready
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">#4324</td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="rounded-circle d-flex align-items-center justify-content-center me-2"
-                                                style="width: 32px; height: 32px; background: linear-gradient(135deg, #198754, #20c997); color: white; font-size: 0.8rem; font-weight: bold;">
-                                                SK
-                                            </div>
-                                            Sarah Kunda
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="d-block">1x Beef Pizza</span>
-                                        <small class="text-muted">Large, Extra Cheese</small>
-                                    </td>
-                                    <td class="fw-bold" style="color: #ffd700;">K 8,200</td>
-                                    <td>
-                                        <span class="text-warning">22 mins ago</span>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-info">Pending</span>
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-sm btn-warning">
-                                            <i class="bi bi-arrow-clockwise me-1"></i>Preparing
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">#4323</td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="rounded-circle d-flex align-items-center justify-content-center me-2"
-                                                style="width: 32px; height: 32px; background: linear-gradient(135deg, #fd7e14, #ffc107); color: white; font-size: 0.8rem; font-weight: bold;">
-                                                TM
-                                            </div>
-                                            Thomas Banda
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="d-block">1x Grilled Chicken</span>
-                                        <small class="text-muted">With Vegetables, Rice</small>
-                                    </td>
-                                    <td class="fw-bold" style="color: #ffd700;">K 6,500</td>
-                                    <td>
-                                        <span class="text-warning">35 mins ago</span>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-info">Pending</span>
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-sm btn-warning">
-                                            <i class="bi bi-arrow-clockwise me-1"></i>Preparing
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">#4322</td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="rounded-circle d-flex align-items-center justify-content-center me-2"
-                                                style="width: 32px; height: 32px; background: linear-gradient(135deg, #6f42c1, #d63384); color: white; font-size: 0.8rem; font-weight: bold;">
-                                                LM
-                                            </div>
-                                            Lisa Mulenga
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="d-block">3x Vegetable Salad</span>
-                                        <small class="text-muted">2x Juice, 1x Water</small>
-                                    </td>
-                                    <td class="fw-bold" style="color: #ffd700;">K 9,600</td>
-                                    <td>
-                                        <span class="text-warning">48 mins ago</span>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-warning text-dark">Preparing</span>
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-sm btn-success">
-                                            <i class="bi bi-check-lg me-1"></i>Ready
-                                        </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
 
 
             </div>

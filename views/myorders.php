@@ -1,10 +1,5 @@
 <?php
 session_start();
-$cart = $_SESSION['cart'] ?? [];
-
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
 
 $is_logged_in = isset($_SESSION['user_id']);
 $userName = $_SESSION['user_name'] ?? 'Guest';
@@ -23,13 +18,22 @@ if ($is_logged_in) {
     $initials = getInitials($userName);
 }
 
-require_once __DIR__ . '/../app/Models/Meal.php'; 
-
-$mealModel = new Meal();
-$latestMeals = $mealModel->getLatestMeals();
-
 $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
-               
+  
+
+require_once __DIR__ . '/../app/models/Order.php';
+require_once __DIR__ . '/../app/models/OrderItem.php';
+
+$orderModel = new Order();
+$orderItemModel = new OrderItem();
+
+$orders = $orderModel->getByUserId($_SESSION['user_id']);
+
+foreach ($orders as &$order) {
+    $order['items'] = $orderItemModel->getByOrderId($order['id']);
+}
+
+            
 ?>
 
 <!DOCTYPE html>
@@ -77,7 +81,6 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
                     </li>
                 </ul>
 
-
                 <form class="d-flex ms-auto me-lg-3 mt-2 mt-lg-0" action="search.php" method="GET" role="search">
                     <input class="form-control me-2 rounded-pill" type="search" name="q"
                         value="<?= htmlspecialchars($_GET['q'] ?? '') ?>" placeholder="Search food..."
@@ -120,74 +123,83 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
             </div>
     </nav>
 
+
+
     
 <div class="container py-5">
-    <h2 class="mb-4 fw-bold">Your Cart</h2>
+    <h2 class="fw-bold mb-4">My Orders</h2>
 
-    <?php if (empty($cart)): ?>
-        <div class="alert alert-info text-center">Your cart is empty!</div>
-    <?php else: ?>
-        <table class="table table-bordered bg-white align-middle">
-            <thead class="table-dark">
-                <tr>
-                    <th>Image</th>
-                    <th>Meal</th>
-                    <th>Price</th>
-                    <th width="150">Qty</th>
-                    <th>Total</th>
-                    <th></th>
-                </tr>
-            </thead>
-
-            <tbody>
-                <?php
-                $grandTotal = 0;
-                foreach ($cart as $item):
-                    $lineTotal = $item['price'] * $item['qty'];
-                    $grandTotal += $lineTotal;
-                ?>
-                <tr>
-                    <td width="100">
-                        <img src="../photos/<?= $item['image']; ?>" class="img-fluid rounded">
-                    </td>
-
-                    <td><?= htmlspecialchars($item['name']); ?></td>
-
-                    <td>MWK <?= number_format($item['price']); ?></td>
-
-                    <td>
-                        <form method="POST" action="../app/controllers/CartController.php" class="d-flex">
-                            <input type="hidden" name="action" value="update">
-                            <input type="hidden" name="meal_id" value="<?= $item['id']; ?>">
-
-                            <input type="number" name="qty" min="1" class="form-control text-center" 
-                                   value="<?= $item['qty']; ?>">
-
-                            <button class="btn btn-primary btn-sm ms-2">Save</button>
-                        </form>
-                    </td>
-
-                    <td>MWK <?= number_format($lineTotal); ?></td>
-
-                    <td>
-                        <form method="POST" action="../app/controllers/CartController.php">
-                            <input type="hidden" name="action" value="delete">
-                            <input type="hidden" name="meal_id" value="<?= $item['id']; ?>">
-                            <button class="btn btn-danger btn-sm">Remove</button>
-                        </form>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-
-        <div class="text-end mt-4">
-            <h3 class="fw-bold">Grand Total: MWK <?= number_format($grandTotal); ?></h3>
-            <a href="checkout.php" class="btn btn-primary btn-lg mt-3">Proceed to Checkout</a>
+    <?php if (empty($orders)): ?>
+        <div class="alert alert-info text-center">
+            You have no orders yet.
         </div>
+    <?php else: ?>
+        <div class="table-responsive">
+            <table class="table table-bordered bg-white align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Order #</th>
+                        <th>Items</th>
+                        <th>Delivery Location</th>
+                        <th>Amount</th>
+                        <th>Order Time</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
 
+                <?php foreach ($orders as $order): ?>
+                    <tr>
+                        <td class="fw-bold">#<?= $order['id']; ?></td>
+
+                        <td>
+                            <?php foreach ($order['items'] as $item): ?>
+                                <div>
+                                    <?= htmlspecialchars($item['meal_name']); ?> × <?= $item['quantity']; ?>
+                                </div>
+                            <?php endforeach; ?>
+                        </td>
+
+                        <td>
+                            <?php if (strpos($order['delivery_address'], ',') !== false): ?>
+                                <a target="_blank"
+                                   href="https://www.google.com/maps?q=<?= urlencode($order['delivery_address']); ?>">
+                                    📍 View on Map
+                                </a>
+                            <?php else: ?>
+                                <?= htmlspecialchars($order['delivery_address']); ?>
+                            <?php endif; ?>
+                        </td>
+
+                        <td class="fw-bold">
+                            MWK <?= number_format($order['total_amount'], 2); ?>
+                        </td>
+
+                        <td>
+                            <?= date('d M Y, H:i', strtotime($order['created_at'])); ?>
+                        </td>
+
+                        <td>
+                            <span class="badge 
+                                <?php
+                                    switch ($order['status']) {
+                                        case 'Delivered': echo 'bg-success'; break;
+                                        case 'Cancelled': echo 'bg-danger'; break;
+                                        case 'Out for Delivery': echo 'bg-primary'; break;
+                                        case 'Preparing': echo 'bg-warning text-dark'; break;
+                                        default: echo 'bg-secondary';
+                                    }
+                                ?>">
+                                <?= $order['status']; ?>
+                            </span>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+
+                </tbody>
+            </table>
+        </div>
     <?php endif; ?>
-
 </div>
 
 </body>

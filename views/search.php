@@ -1,46 +1,43 @@
 <?php
-    if (session_status() == PHP_SESSION_NONE) {
-        session_start();
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Check if the user is logged in
+$is_logged_in = isset($_SESSION['user_id']);
+$userName = $_SESSION['user_name'] ?? 'Guest';
+$initials = '';
+
+function getInitials($fullName) {
+    $parts = explode(' ', $fullName);
+    $initials = strtoupper(substr($parts[0], 0, 1));
+    if (count($parts) > 1) {
+        // Use the first letter of the last part of the name
+        $initials .= strtoupper(substr(end($parts), 0, 1));
     }
+    return $initials;
+}
 
-    $is_logged_in = isset($_SESSION['user_id']);
-    $userName = $_SESSION['user_name'] ?? 'Guest';
-    $initials = '';
+if ($is_logged_in) {
+    $initials = getInitials($userName);
+}
 
-    function getInitials($fullName) {
-        $parts = explode(' ', $fullName);
-        $initials = strtoupper(substr($parts[0], 0, 1));
-        if (count($parts) > 1) {
-            $initials .= strtoupper(substr(end($parts), 0, 1));
-        }
-        return $initials;
-    }
+require_once __DIR__ . '/../app/Models/Meal.php'; 
 
-    if ($is_logged_in) {
-        $initials = getInitials($userName);
-    }
 
-    require_once __DIR__ . '/../app/Models/Meal.php'; 
+$cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;  
 
-    $mealModel = new Meal();
-    $latestMeals = $mealModel->Menu();
 
-    $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;      
+$mealModel = new Meal();
 
-    require_once __DIR__ . '/../app/models/Category.php';
+$keyword = trim($_GET['q'] ?? '');
 
-    $mealModel = new Meal();
-    $categoryModel = new Category();
+$latestMeals = [];
 
-    $categories = $categoryModel->getAll();
+if (!empty($keyword)) {
+    $latestMeals = $mealModel->search($keyword);
+}
 
-    $selectedCategory = $_GET['category'] ?? null;
-
-    if ($selectedCategory) {
-        $latestMeals = $mealModel->getByCategory($selectedCategory);
-    } else {
-        $latestMeals = $mealModel->getLatestMeals();
-    }
 ?>
 
 <!DOCTYPE html>
@@ -132,41 +129,23 @@
     </nav>
 
 
-    <!-- HERO -->
-    <section class="hero" style="
-    background: linear-gradient(rgba(0, 0, 0, 0.349), rgba(0, 0, 0, 0.404)),
-        url('../assests/img/cover1.jpg') center/cover no-repeat;">
-        <div class="container">
-            <h1 class="display-4 fw-bold">Delicious Meals Delivered Across Mzuzu</h1>
-            <p class="lead mb-4">Fast, reliable and fresh — enjoy Aunt Joy’s best meals from the comfort of your home.
-            </p>
-            <a href="#menu" class="btn btn-sky btn-lg">FULL MENU</a>
-        </div>
-    </section>
 
 
     <!-- MENU PREVIEW -->
     <section class="py-5" id="menu">
         <div class="container">
-            <div class="section-header text-center mb-5">
-                <h2>FULL MENU</h2>
-                <p>Freshly prepared and always delicious</p>
-            </div>
 
-            <!-- CATEGORY FILTERS -->
-            <div class="d-flex flex-wrap justify-content-center gap-2 mb-4">
-
-                <a href="menu.php" class="btn btn-outline-primary <?= empty($selectedCategory) ? 'active' : '' ?>">
-                    All
-                </a>
-
-                <?php foreach ($categories as $category): ?>
-                <a href="menu.php?category=<?= $category['id'] ?>" class="btn btn-outline-primary
-               <?= ($selectedCategory == $category['id']) ? 'active' : '' ?>">
-                    <?= htmlspecialchars($category['name']) ?>
-                </a>
-                <?php endforeach; ?>
-
+            <div class="text-center mb-4">
+                <?php if (!empty($keyword)): ?>
+                <h4>
+                    Search results for
+                    <span class="text-primary">"
+                        <?= htmlspecialchars($keyword) ?>"
+                    </span>
+                </h4>
+                <?php else: ?>
+                <h4>Please enter a search term</h4>
+                <?php endif; ?>
             </div>
 
             <div class="row g-4 justify-content-center">
@@ -184,7 +163,7 @@
                             </h5>
 
                             <p class="text-muted small flex-grow-1">
-                                <?= htmlspecialchars(substr($meal['description'], 0, 50)) ?>...
+                                <?= htmlspecialchars(substr($meal['description'], 0, 50)); ?>...
                             </p>
 
                             <span class="price fw-bolder mb-2">
@@ -200,9 +179,10 @@
                     </div>
                 </div>
                 <?php endforeach; ?>
+
                 <?php else: ?>
                 <div class="col-12 text-center text-muted py-5">
-                    <p>No meals found for this category.</p>
+                    <p>No meals found matching your search.</p>
                 </div>
                 <?php endif; ?>
 
@@ -210,6 +190,7 @@
 
         </div>
     </section>
+
 
     <!-- FEATURES -->
     <section class="features-section" id="features">
@@ -339,13 +320,10 @@
         }
 
 
-        // Notification system
         function showNotification(message, type = 'info') {
-          
             const existingNotifications = document.querySelectorAll('.custom-notification');
             existingNotifications.forEach(notification => notification.remove());
 
-            // Create notification
             const notification = document.createElement('div');
             notification.className = `custom-notification alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show`;
             notification.innerHTML = `
@@ -375,7 +353,7 @@
                 }
             }, 5000);
         }
-
+        
         const style = document.createElement('style');
         style.textContent = `
             @keyframes slideInRight {
@@ -407,7 +385,8 @@
                 });
         }
 
-        
+
+
         const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);

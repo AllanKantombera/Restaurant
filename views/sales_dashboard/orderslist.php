@@ -1,3 +1,44 @@
+<?php
+    if (session_status() == PHP_SESSION_NONE) {
+        session_start();
+    }
+    if (!isset($_SESSION['role_id']) || $_SESSION['role_id'] != 3) {
+        header("Location: ../../public/login.php");
+        exit;
+    }
+
+    $userName = $_SESSION['user_name'] ?? 'Guest';
+    $initials = '';
+
+    function getInitials($fullName) {
+        if (strpos($fullName, ' ') === false) {
+            return strtoupper(substr($fullName, 0, 1));
+        }
+        
+        $parts = explode(' ', $fullName);
+        $initials = '';
+        
+        $initials .= strtoupper(substr($parts[0], 0, 1));
+        
+        if (count($parts) > 1) {
+            $initials .= strtoupper(substr(end($parts), 0, 1));
+        }
+        
+        return $initials;
+    }
+
+    if ($userName !== 'Guest') {
+        $initials = getInitials($userName);
+    }
+
+    require_once __DIR__ . '/../../app/models/Order.php';
+    require_once __DIR__ . '/../../app/models/OrderItem.php';
+
+    $orderModel = new Order();
+    $orderItemModel = new OrderItem();
+
+    $orders = $orderModel->getAllWithUser();
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -12,16 +53,33 @@
 </head>
 
 <body>
-    <!-- Fixed Navbar -->
+
     <nav class="navbar navbar-dark px-4">
         <a class="navbar-brand d-flex align-items-center" href="#">
             <div class="logo">AJ</div>
             <span class="text-light fw-bold">Aunt Joy's Restaurant</span>
         </a>
 
-        <div class="d-flex">
-            <span class="text-light me-3">sales User</span>
-            <button class="btn btn-sm btn-outline-light">Logout</button>
+        <div class="dropdown">
+            <button class="btn btn-dark d-flex align-items-center dropdown-toggle" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false">
+
+                <div class="logo me-2">
+                    <?= $initials; ?>
+                </div>
+
+                <span class="text-light">
+                    <?= htmlspecialchars($userName); ?>
+                </span>
+            </button>
+
+            <ul class="dropdown-menu dropdown-menu-end bg-dark">
+                <li>
+                    <a class="dropdown-item bg-dark text-danger" href="../../public/logout.php">
+                        Logout
+                    </a>
+                </li>
+            </ul>
         </div>
     </nav>
 
@@ -47,6 +105,11 @@
                             <i class="bi bi-people-fill me-2"></i> Orders List
                         </a>
                     </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="../index.php">
+                            <i class="bi bi-home me-2"></i> Home
+                        </a>
+                    </li>
                 </ul>
             </div>
 
@@ -54,161 +117,110 @@
             <div class="col-md-10 main-content">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2 class="section-title">All Orders</h2>
-                    <div class="d-flex gap-2">
-                        <div class="input-group" style="width: 300px;">
-                            <span class="input-group-text"
-                                style="background: #111723; border-color: #1e2a38; color: #9ecbff;">
-                                <i class="bi bi-search"></i>
-                            </span>
-                            <input type="text" class="form-control"
-                                style="background: #111723; border-color: #1e2a38; color: #dce7f5;"
-                                placeholder="Search orders...">
-                        </div>
-                        <button class="btn btn-outline-primary">
-                            <i class="bi bi-download me-1"></i>Export
-                        </button>
-                    </div>
+                    
                 </div>
 
-
-
-                <!-- Orders Summary Cards -->
-                <div class="row mb-4">
-                    <div class="col-md-3 mb-3">
-                        <div class="card card-custom text-center p-3">
-                            <div class="text-info">Total Orders</div>
-                            <h4 class="my-2" style="color: #adb5bd;">156</h4>
-                            <p>This month</p>
-                        </div>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <div class="card card-custom text-center p-3">
-                            <div class="text-warning">Pending</div>
-                            <h4 class="my-2" style="color: #adb5bd;">8</h4>
-                            <p>Active orders</p>
-                        </div>
-                    </div>
-
-                    <div class="col-md-3 mb-3">
-                        <div class="card card-custom text-center p-3">
-                            <div class="text-success">Completed</div>
-                            <h4 class="my-2" style="color: #adb5bd;">142</h4>
-                            <p>This month</p>
-                        </div>
-                    </div>
-
-                    <div class="col-md-3 mb-3">
-                        <div class="card card-custom text-center p-3">
-                            <div class="text-warning">Revenue</div>
-                            <h4 class="my-2" style="color: #ffd700;">K 425K</h4>
-                            <p>This month</p>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- All Orders Table -->
                 <div class="card card-custom p-4">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4 class="section-title mb-0">Order History</h4>
-                        <div class="text-muted">Showing 1-15 of 156 orders</div>
-                    </div>
+                  
 
                     <div class="table-responsive">
                         <table class="table table-dark table-hover">
                             <thead>
                                 <tr>
-                                    <th>Order #</th>
+                                    <th>Order ID</th>
                                     <th>Customer</th>
-                                    <th>Type</th>
                                     <th>Items</th>
                                     <th>Amount</th>
-                                    <th>Payment</th>
-                                    <th>Status</th>
+                                    <th>Location</th>
                                     <th>Order Time</th>
-                                    <th>Actions</th>
+                                    <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <!-- Order 1 -->
+                                    <?php if (!empty($orders)): ?>
+                                    <?php foreach ($orders as $order): ?>
+                                    <?php
+                                    $items = $orderItemModel->getByOrderId($order['id']);
+                                ?>
                                 <tr>
-                                    <td class="fw-bold">#4325</td>
-                                    <td>
-                                        Peter Mwale
+                                    <td>#
+                                        <?= $order['id'] ?>
+                                    </td>
 
-                                    </td>
-                                    <td><span class="badge bg-secondary">Dine-in</span></td>
                                     <td>
-                                        <span class="d-block">2x Chicken Burger</span>
-                                        <small class="text-muted">1x Fries, 2x Coke</small>
+                                        <strong>
+                                            <?= htmlspecialchars($order['customer_name']) ?>
+                                        </strong>
                                     </td>
-                                    <td class="fw-bold" style="color: #ffd700;">K 12,500</td>
-                                    <td><span class="badge bg-success">Paid</span></td>
-                                    <td><span class="badge bg-success">Delivered</span></td>
+
                                     <td>
-                                        <div>Today</div>
-                                        <small class="text-muted">15:30</small>
+                                        <?php if (!empty($items)): ?>
+                                        <ul class="list-unstyled mb-0">
+                                            <?php foreach ($items as $item): ?>
+                                            <li>
+                                                <?= $item['meal_name'] ?>
+                                                ×
+                                                <?= $item['quantity'] ?>
+                                            </li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                        <?php else: ?>
+                                        <em>No items</em>
+                                        <?php endif; ?>
+                                    </td>
+
+                                    <td>
+                                        <strong>K
+                                            <?= number_format($order['total_amount'], 2) ?>
+                                        </strong>
                                     </td>
                                     <td>
-                                        <button class="btn btn-sm btn-outline-info">
-                                            <i class="bi bi-eye"></i>
-                                        </button>
+
+                                        <?php if (!empty($order['location'])): ?>
+                                        <?= htmlspecialchars($order['delivery_address'] ?? 'N/A') ?><br>
+
+                                        <?php
+                                            $coords = trim($order['location'], '()');
+                                            $mapUrl = "https://www.google.com/maps?q={$coords}";
+                                        ?>
+                                        <a href="<?= $mapUrl ?>" target="_blank" class="text-decoration-none">
+                                            <i class="bi bi-geo-alt-fill text-danger"></i>
+                                            View Location
+                                        </a>
+                                        <?php else: ?>
+                                        <em>No location</em>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <?= date('d M Y, H:i', strtotime($order['created_at'])) ?>
+                                    </td>
+
+                                    <td>
+                                    <span class="badge 
+                                    <?php
+                                        switch ($order['status']) {
+                                            case 'Pending': echo 'bg-warning'; break;
+                                            case 'Preparing': echo 'bg-info'; break;
+                                            case 'Out for Delivery': echo 'bg-primary'; break;
+                                            case 'Delivered': echo 'bg-success'; break;
+                                            case 'Cancelled': echo 'bg-danger'; break;
+                                            default: echo 'bg-secondary';
+                                        }
+                                    ?>">
+                                            <?= $order['status'] ?>
+                                        </span>
                                     </td>
                                 </tr>
-
-                                <!-- Order 2 -->
+                                <?php endforeach; ?>
+                                <?php else: ?>
                                 <tr>
-                                    <td class="fw-bold">#4324</td>
-                                    <td>
-                                        Sarah Kunda
-
-                                    </td>
-                                    <td><span class="badge bg-info">Takeaway</span></td>
-                                    <td>
-                                        <span class="d-block">1x Beef Pizza</span>
-                                        <small class="text-muted">Large, Extra Cheese</small>
-                                    </td>
-                                    <td class="fw-bold" style="color: #ffd700;">K 8,200</td>
-                                    <td><span class="badge bg-success">Paid</span></td>
-                                    <td><span class="badge bg-warning text-dark">Preparing</span></td>
-                                    <td>
-                                        <div>Today</div>
-                                        <small class="text-muted">15:23</small>
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-sm btn-outline-warning">
-                                            <i class="bi bi-pencil"></i>
-                                        </button>
+                                    <td colspan="6" class="text-center text-muted">
+                                        No orders found
                                     </td>
                                 </tr>
-
-                                <!-- Order 3 -->
-                                <tr>
-                                    <td class="fw-bold">#4323</td>
-                                    <td>
-
-                                        Thomas Banda
-
-                                    </td>
-                                    <td><span class="badge bg-primary">Delivery</span></td>
-                                    <td>
-                                        <span class="d-block">1x Grilled Chicken</span>
-                                        <small class="text-muted">With Vegetables, Rice</small>
-                                    </td>
-                                    <td class="fw-bold" style="color: #ffd700;">K 6,500</td>
-                                    <td><span class="badge bg-warning text-dark">Pending</span></td>
-                                    <td><span class="badge bg-info">Pending</span></td>
-                                    <td>
-                                        <div>Today</div>
-                                        <small class="text-muted">15:10</small>
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-sm btn-outline-warning">
-                                            <i class="bi bi-pencil"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-
-
+                                <?php endif; ?>
                             </tbody>
                         </table>
                     </div>

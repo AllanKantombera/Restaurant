@@ -1,5 +1,4 @@
 <?php
-// File: app/controllers/MealController.php
 
 require_once __DIR__ . '/../../config/Database.php';
 require_once __DIR__ . '/../models/Meal.php';
@@ -14,17 +13,14 @@ class MealController {
         }
     }
 
-    // 1. Add Meal
     public function addMeal() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $name = trim($_POST['name']);
             $description = trim($_POST['description']);
             $price = floatval($_POST['price']);
             $category_id = intval($_POST['category_id']);
-            // Convert status to 1 or 0
             $is_available = intval($_POST['is_available']);
 
-            // Validate Image
             if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
                 die("Error uploading image.");
             }
@@ -37,11 +33,9 @@ class MealController {
                 die("Invalid image format.");
             }
 
-            // Generate unique name
             $imageName = time() . '_' . uniqid() . '.' . $ext;
             $targetDir = __DIR__ . '/../../photos/';
             
-            // Ensure directory exists
             if (!is_dir($targetDir)) {
                 mkdir($targetDir, 0777, true);
             }
@@ -67,12 +61,10 @@ class MealController {
         }
     }
 
-    // 2. Update Meal
     public function updateMeal() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = intval($_POST['id']);
             
-            // Fetch existing meal to get current image
             $currentMeal = $this->meal->getById($id);
             if (!$currentMeal) {
                 die("Meal not found");
@@ -84,9 +76,8 @@ class MealController {
             $category_id = intval($_POST['category_id']);
             $is_available = intval($_POST['is_available']);
             
-            $imageName = $currentMeal['image_url']; // Default to old image
+            $imageName = $currentMeal['image_url']; 
 
-            // Check if a new image was uploaded
             if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
                 $file = $_FILES['image'];
                 $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
@@ -94,9 +85,7 @@ class MealController {
                 $targetDir = __DIR__ . '/../../photos/';
 
                 if (move_uploaded_file($file['tmp_name'], $targetDir . $newImageName)) {
-                    $imageName = $newImageName; // Update to new image name
-                    
-                    // Optional: Delete old image to save space
+                    $imageName = $newImageName; 
                     if (file_exists($targetDir . $currentMeal['image_url'])) {
                         unlink($targetDir . $currentMeal['image_url']);
                     }
@@ -113,7 +102,6 @@ class MealController {
                 'image_url' => $imageName
             ];
 
-            // Assuming your Model has an updateMeal method
             if ($this->meal->updateMeal($data)) {
                 header("Location: ../../views/admin_dashboard/meals.php?msg=Meal Updated");
             } else {
@@ -121,31 +109,27 @@ class MealController {
             }
         }
     }
-// In app/controllers/MealController.php
 
-public function deleteMeal() { // REMOVE $id from these parentheses
-        
-    // Check if ID exists in the URL (e.g., ?action=deleteMeal&id=5)
-    if (isset($_GET['id'])) {
-        $id = $_GET['id'];
+    public function deleteMeal() { 
 
-        // Call the Model's delete function
-        // Ensure your Meal.php model has a 'delete($id)' function
-        if ($this->meal->delete($id)) {
-            // Success: Redirect
-            header("Location: ../../views/admin_dashboard/meals.php?msg=Meal Deleted Successfully");
-            exit;
+        if (isset($_GET['id'])) {
+            $id = $_GET['id'];
+
+            if ($this->meal->delete($id)) {
+             
+                header("Location: ../../views/admin_dashboard/meals.php?msg=Meal Deleted Successfully");
+                exit;
+            } else {
+                die("Failed to delete meal.");
+            }
         } else {
-            die("Failed to delete meal.");
+            die("No ID provided.");
         }
-    } else {
-        die("No ID provided.");
     }
-}
+
 
 }
 
-// Route the request
 if (isset($_GET['action'])) {
     $controller = new MealController();
     $action = $_GET['action'];

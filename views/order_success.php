@@ -1,6 +1,5 @@
 <?php
-session_start();
-$cart = $_SESSION['cart'] ?? [];
+$order_id = $_GET['order_id'] ?? 0;
 
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
@@ -120,74 +119,11 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
             </div>
     </nav>
 
-    
-<div class="container py-5">
-    <h2 class="mb-4 fw-bold">Your Cart</h2>
+<div class="container py-5 text-center">
+    <h1 class="text-success fw-bold mb-3">Order Successfully Placed!</h1>
+    <p class="lead">Your order ID is <strong>#<?= htmlspecialchars($order_id); ?></strong></p>
 
-    <?php if (empty($cart)): ?>
-        <div class="alert alert-info text-center">Your cart is empty!</div>
-    <?php else: ?>
-        <table class="table table-bordered bg-white align-middle">
-            <thead class="table-dark">
-                <tr>
-                    <th>Image</th>
-                    <th>Meal</th>
-                    <th>Price</th>
-                    <th width="150">Qty</th>
-                    <th>Total</th>
-                    <th></th>
-                </tr>
-            </thead>
-
-            <tbody>
-                <?php
-                $grandTotal = 0;
-                foreach ($cart as $item):
-                    $lineTotal = $item['price'] * $item['qty'];
-                    $grandTotal += $lineTotal;
-                ?>
-                <tr>
-                    <td width="100">
-                        <img src="../photos/<?= $item['image']; ?>" class="img-fluid rounded">
-                    </td>
-
-                    <td><?= htmlspecialchars($item['name']); ?></td>
-
-                    <td>MWK <?= number_format($item['price']); ?></td>
-
-                    <td>
-                        <form method="POST" action="../app/controllers/CartController.php" class="d-flex">
-                            <input type="hidden" name="action" value="update">
-                            <input type="hidden" name="meal_id" value="<?= $item['id']; ?>">
-
-                            <input type="number" name="qty" min="1" class="form-control text-center" 
-                                   value="<?= $item['qty']; ?>">
-
-                            <button class="btn btn-primary btn-sm ms-2">Save</button>
-                        </form>
-                    </td>
-
-                    <td>MWK <?= number_format($lineTotal); ?></td>
-
-                    <td>
-                        <form method="POST" action="../app/controllers/CartController.php">
-                            <input type="hidden" name="action" value="delete">
-                            <input type="hidden" name="meal_id" value="<?= $item['id']; ?>">
-                            <button class="btn btn-danger btn-sm">Remove</button>
-                        </form>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-
-        <div class="text-end mt-4">
-            <h3 class="fw-bold">Grand Total: MWK <?= number_format($grandTotal); ?></h3>
-            <a href="checkout.php" class="btn btn-primary btn-lg mt-3">Proceed to Checkout</a>
-        </div>
-
-    <?php endif; ?>
-
+    <a href="menu.php" class="btn btn-primary mt-4">Continue Shopping</a>
 </div>
 
 </body>

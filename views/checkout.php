@@ -1,6 +1,30 @@
 <?php
 session_start();
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../public/login.php?redirect=checkout");
+    exit;
+}
+
 $cart = $_SESSION['cart'] ?? [];
+if (empty($cart)) {
+    header("Location: cart.php");
+    exit;
+}
+
+
+
+$cart = $_SESSION['cart'] ?? [];
+
+if (empty($cart)) {
+    header("Location: cart.php");
+    exit;
+}
+
+$grandTotal = 0;
+foreach ($cart as $item) {
+    $grandTotal += ($item['price'] * $item['qty']);
+}
 
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
@@ -120,75 +144,97 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
             </div>
     </nav>
 
-    
+
+
 <div class="container py-5">
-    <h2 class="mb-4 fw-bold">Your Cart</h2>
+    <h2 class="fw-bold mb-4">Checkout</h2>
 
-    <?php if (empty($cart)): ?>
-        <div class="alert alert-info text-center">Your cart is empty!</div>
-    <?php else: ?>
-        <table class="table table-bordered bg-white align-middle">
-            <thead class="table-dark">
-                <tr>
-                    <th>Image</th>
-                    <th>Meal</th>
-                    <th>Price</th>
-                    <th width="150">Qty</th>
-                    <th>Total</th>
-                    <th></th>
-                </tr>
-            </thead>
+    <div class="row g-4">
 
-            <tbody>
-                <?php
-                $grandTotal = 0;
-                foreach ($cart as $item):
-                    $lineTotal = $item['price'] * $item['qty'];
-                    $grandTotal += $lineTotal;
-                ?>
-                <tr>
-                    <td width="100">
-                        <img src="../photos/<?= $item['image']; ?>" class="img-fluid rounded">
-                    </td>
+        <!-- Order Summary -->
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white fw-bold">Order Summary</div>
+                <div class="card-body">
 
-                    <td><?= htmlspecialchars($item['name']); ?></td>
+                    <?php foreach ($cart as $item): ?>
+                        <div class="d-flex justify-content-between border-bottom py-2">
+                            <span><?= htmlspecialchars($item['name']); ?> (x<?= $item['qty']; ?>)</span>
+                            <span>MWK <?= number_format($item['price'] * $item['qty']); ?></span>
+                        </div>
+                    <?php endforeach; ?>
 
-                    <td>MWK <?= number_format($item['price']); ?></td>
-
-                    <td>
-                        <form method="POST" action="../app/controllers/CartController.php" class="d-flex">
-                            <input type="hidden" name="action" value="update">
-                            <input type="hidden" name="meal_id" value="<?= $item['id']; ?>">
-
-                            <input type="number" name="qty" min="1" class="form-control text-center" 
-                                   value="<?= $item['qty']; ?>">
-
-                            <button class="btn btn-primary btn-sm ms-2">Save</button>
-                        </form>
-                    </td>
-
-                    <td>MWK <?= number_format($lineTotal); ?></td>
-
-                    <td>
-                        <form method="POST" action="../app/controllers/CartController.php">
-                            <input type="hidden" name="action" value="delete">
-                            <input type="hidden" name="meal_id" value="<?= $item['id']; ?>">
-                            <button class="btn btn-danger btn-sm">Remove</button>
-                        </form>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-
-        <div class="text-end mt-4">
-            <h3 class="fw-bold">Grand Total: MWK <?= number_format($grandTotal); ?></h3>
-            <a href="checkout.php" class="btn btn-primary btn-lg mt-3">Proceed to Checkout</a>
+                    <h4 class="text-end mt-3 fw-bold">
+                        Total: MWK <?= number_format($grandTotal); ?>
+                    </h4>
+                </div>
+            </div>
         </div>
 
-    <?php endif; ?>
+
+
+        <!-- Checkout Form -->
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white fw-bold">Delivery Details</div>
+
+                <div class="card-body">
+                    <form method="POST" action="../app/controllers/CheckoutController.php">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Delivery Address (Area/Town/Village)</label>
+                            <input type="text" name="delivery_address" class="form-control" placeholder="e.g. Mzuni, Kandaha" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Or Send GPS Location (optional)</label>
+
+                            <input type="hidden" name="gps_location" id="gps_location">
+
+                            <button type="button" class="btn btn-secondary" onclick="getLocation()">
+                                Use My GPS Location
+                            </button>
+
+                            <p class="text-muted small mt-2" id="gps_status"></p>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 btn-lg fw-bold mt-3">
+                            Confirm Order
+                        </button>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
 
 </div>
+
+
+<script>
+function getLocation() {
+    const status = document.getElementById("gps_status");
+
+    if (!navigator.geolocation) {
+        status.innerText = "GPS not supported by your device.";
+        return;
+    }
+
+    status.innerText = "Getting your location...";
+
+    navigator.geolocation.getCurrentPosition(
+        position => {
+            const coords = position.coords.latitude + "," + position.coords.longitude;
+            document.getElementById("gps_location").value = coords;
+            status.innerText = "Location captured ✔";
+        },
+        () => {
+            status.innerText = "Unable to get location.";
+        }
+    );
+}
+</script>
 
 </body>
 </html>
