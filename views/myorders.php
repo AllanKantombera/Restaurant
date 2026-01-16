@@ -125,15 +125,15 @@ foreach ($orders as &$order) {
 
 
 
-    
-<div class="container py-5">
-    <h2 class="fw-bold mb-4">My Orders</h2>
 
-    <?php if (empty($orders)): ?>
+    <div class="container py-5">
+        <h2 class="fw-bold mb-4">My Orders</h2>
+
+        <?php if (empty($orders)): ?>
         <div class="alert alert-info text-center">
             You have no orders yet.
         </div>
-    <?php else: ?>
+        <?php else: ?>
         <div class="table-responsive">
             <table class="table table-bordered bg-white align-middle">
                 <thead class="table-dark">
@@ -148,31 +148,35 @@ foreach ($orders as &$order) {
                 </thead>
                 <tbody>
 
-                <?php foreach ($orders as $order): ?>
+                    <?php foreach ($orders as $order): ?>
                     <tr>
-                        <td class="fw-bold">#<?= $order['id']; ?></td>
+                        <td class="fw-bold">#
+                            <?= $order['id']; ?>
+                        </td>
 
                         <td>
                             <?php foreach ($order['items'] as $item): ?>
-                                <div>
-                                    <?= htmlspecialchars($item['meal_name']); ?> × <?= $item['quantity']; ?>
-                                </div>
+                            <div>
+                                <?= htmlspecialchars($item['name']); ?> ×
+                                <?= $item['quantity']; ?>
+                            </div>
                             <?php endforeach; ?>
                         </td>
 
                         <td>
                             <?php if (strpos($order['delivery_address'], ',') !== false): ?>
-                                <a target="_blank"
-                                   href="https://www.google.com/maps?q=<?= urlencode($order['delivery_address']); ?>">
-                                    📍 View on Map
-                                </a>
+                            <a target="_blank"
+                                href="https://www.google.com/maps?q=<?= urlencode($order['delivery_address']); ?>">
+                                📍 View on Map
+                            </a>
                             <?php else: ?>
-                                <?= htmlspecialchars($order['delivery_address']); ?>
+                            <?= htmlspecialchars($order['delivery_address']); ?>
                             <?php endif; ?>
                         </td>
 
                         <td class="fw-bold">
-                            MWK <?= number_format($order['total_amount'], 2); ?>
+                            MWK
+                            <?= number_format($order['total_amount'], 2); ?>
                         </td>
 
                         <td>
@@ -194,13 +198,14 @@ foreach ($orders as &$order) {
                             </span>
                         </td>
                     </tr>
-                <?php endforeach; ?>
+                    <?php endforeach; ?>
 
                 </tbody>
             </table>
         </div>
-    <?php endif; ?>
-</div>
+        <?php endif; ?>
+    </div>
 
 </body>
+
 </html>

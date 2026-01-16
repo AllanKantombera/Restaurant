@@ -95,10 +95,6 @@ class User {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-
-
-
-
     public function getStaffUsers() {
         $query = "
             SELECT u.id, u.name, u.email, u.phone, r.name as role, u.is_active 
@@ -125,8 +121,6 @@ class User {
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
-    
 
     public function toggleUserStatus($userId, $newStatus) {
         $query = "UPDATE " . $this->table . " SET is_active = :status WHERE id = :id";
